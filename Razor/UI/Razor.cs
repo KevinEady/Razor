@@ -39,6 +39,8 @@ using Assistant.Core;
 using Assistant.Scripts;
 using Assistant.UI;
 using Ultima;
+using Microsoft.ClearScript.JavaScript;
+using Microsoft.ClearScript.V8;
 using ContainerLabels = Assistant.UI.ContainerLabels;
 using Exception = System.Exception;
 using OverheadMessages = Assistant.UI.OverheadMessages;
@@ -6805,9 +6807,54 @@ namespace Assistant
             Config.SetProperty("ScriptDisablePlayFinish", scriptFindTypeRange.Checked);
         }
 
-        private void tabPage2_Click(object sender, EventArgs e)
-        {
 
-        }
+    private void execScriptv2_Click(object sender, EventArgs e)
+    {
+      // create a script engine
+
+      using (var engine = new V8ScriptEngine())
+
+
+      {
+
+        // expose a host type
+
+        //engine.AddHostType("Console", typeof(Console));
+
+        object result = engine.Evaluate(scriptv2Editor.Text);
+
+
+        execScriptResult.Visible = true;
+        execScriptResult.Text = result.ToString() ;
+
+        //// expose a host object
+
+        //engine.AddHostObject("random", new Random());
+
+        //engine.Execute("Console.WriteLine(random.NextDouble())");
+
+        //// call a script function
+
+        //engine.Execute("function print(x) { Console.WriteLine(x); }");
+
+        //engine.Script.print(DateTime.Now.DayOfWeek);
+
+
+
+        //// examine a script object
+
+        //engine.Execute("person = { name: 'Fred', age: 5 }");
+
+        //Console.WriteLine(engine.Script.person.name);
+
+
+      }
+
     }
+
+    private void label5_Click(object sender, EventArgs e)
+    {
+
+    }
+  }
 }

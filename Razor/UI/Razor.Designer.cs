@@ -754,6 +754,9 @@ namespace Assistant
       this.removeScriptVariable = new System.Windows.Forms.Button();
       this.addScriptVariable = new System.Windows.Forms.Button();
       this.scriptVariables = new System.Windows.Forms.ListBox();
+      this.subScriptsv2 = new System.Windows.Forms.TabPage();
+      this.execScriptv2 = new System.Windows.Forms.Button();
+      this.scriptv2Editor = new System.Windows.Forms.TextBox();
       this.screenshotTab = new System.Windows.Forms.TabPage();
       this.captureOwnDeathDelay = new System.Windows.Forms.TextBox();
       this.lblOwnDeathMs = new System.Windows.Forms.Label();
@@ -797,9 +800,7 @@ namespace Assistant
       this.linkMain = new System.Windows.Forms.LinkLabel();
       this.label21 = new System.Windows.Forms.Label();
       this.aboutVer = new System.Windows.Forms.Label();
-      this.subScriptsv2 = new System.Windows.Forms.TabPage();
-      this.textBox1 = new System.Windows.Forms.TextBox();
-      this.execScriptv2 = new System.Windows.Forms.Button();
+      this.execScriptResult = new System.Windows.Forms.Label();
       this.tabs.SuspendLayout();
       this.generalTab.SuspendLayout();
       this.subGeneralTab.SuspendLayout();
@@ -848,11 +849,11 @@ namespace Assistant
       ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
       this.tabPage3.SuspendLayout();
       this.scriptVariablesBox.SuspendLayout();
+      this.subScriptsv2.SuspendLayout();
       this.screenshotTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.screenPrev)).BeginInit();
       this.advancedTab.SuspendLayout();
       this.aboutTab.SuspendLayout();
-      this.subScriptsv2.SuspendLayout();
       this.SuspendLayout();
       // 
       // m_NotifyIcon
@@ -4301,10 +4302,10 @@ namespace Assistant
       this.tabPage3.Controls.Add(this.autoSaveScriptPlay);
       this.tabPage3.Controls.Add(this.autoSaveScript);
       this.tabPage3.Controls.Add(this.scriptVariablesBox);
-      this.tabPage3.Location = new System.Drawing.Point(4, 24);
+      this.tabPage3.Location = new System.Drawing.Point(4, 22);
       this.tabPage3.Name = "tabPage3";
       this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-      this.tabPage3.Size = new System.Drawing.Size(498, 285);
+      this.tabPage3.Size = new System.Drawing.Size(498, 287);
       this.tabPage3.TabIndex = 1;
       this.tabPage3.Text = "Options";
       // 
@@ -4425,6 +4426,42 @@ namespace Assistant
       this.scriptVariables.Name = "scriptVariables";
       this.scriptVariables.Size = new System.Drawing.Size(153, 229);
       this.scriptVariables.TabIndex = 1;
+      // 
+      // subScriptsv2
+      // 
+      this.subScriptsv2.BackColor = System.Drawing.SystemColors.Control;
+      this.subScriptsv2.Controls.Add(this.execScriptResult);
+      this.subScriptsv2.Controls.Add(this.execScriptv2);
+      this.subScriptsv2.Controls.Add(this.scriptv2Editor);
+      this.subScriptsv2.Location = new System.Drawing.Point(4, 24);
+      this.subScriptsv2.Name = "subScriptsv2";
+      this.subScriptsv2.Padding = new System.Windows.Forms.Padding(3);
+      this.subScriptsv2.Size = new System.Drawing.Size(498, 285);
+      this.subScriptsv2.TabIndex = 2;
+      this.subScriptsv2.Text = "Scripts v2";
+      // 
+      // execScriptv2
+      // 
+      this.execScriptv2.Location = new System.Drawing.Point(377, 20);
+      this.execScriptv2.Name = "execScriptv2";
+      this.execScriptv2.Size = new System.Drawing.Size(98, 23);
+      this.execScriptv2.TabIndex = 1;
+      this.execScriptv2.Text = "Execute Script";
+      this.execScriptv2.UseVisualStyleBackColor = true;
+      this.execScriptv2.Click += new System.EventHandler(this.execScriptv2_Click);
+      // 
+      // scriptv2Editor
+      // 
+      this.scriptv2Editor.AcceptsReturn = true;
+      this.scriptv2Editor.AcceptsTab = true;
+      this.scriptv2Editor.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.scriptv2Editor.Location = new System.Drawing.Point(25, 20);
+      this.scriptv2Editor.Multiline = true;
+      this.scriptv2Editor.Name = "scriptv2Editor";
+      this.scriptv2Editor.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+      this.scriptv2Editor.Size = new System.Drawing.Size(346, 129);
+      this.scriptv2Editor.TabIndex = 0;
+      this.scriptv2Editor.WordWrap = false;
       // 
       // screenshotTab
       // 
@@ -4900,40 +4937,15 @@ namespace Assistant
       this.aboutVer.Text = "Razor v{0}";
       this.aboutVer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
-      // subScriptsv2
+      // execScriptResult
       // 
-      this.subScriptsv2.BackColor = System.Drawing.SystemColors.Control;
-      this.subScriptsv2.Controls.Add(this.execScriptv2);
-      this.subScriptsv2.Controls.Add(this.textBox1);
-      this.subScriptsv2.Location = new System.Drawing.Point(4, 24);
-      this.subScriptsv2.Name = "subScriptsv2";
-      this.subScriptsv2.Padding = new System.Windows.Forms.Padding(3);
-      this.subScriptsv2.Size = new System.Drawing.Size(498, 285);
-      this.subScriptsv2.TabIndex = 2;
-      this.subScriptsv2.Text = "Scripts v2";
-      this.subScriptsv2.Click += new System.EventHandler(this.tabPage2_Click);
-      // 
-      // textBox1
-      // 
-      this.textBox1.AcceptsReturn = true;
-      this.textBox1.AcceptsTab = true;
-      this.textBox1.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.textBox1.Location = new System.Drawing.Point(25, 20);
-      this.textBox1.Multiline = true;
-      this.textBox1.Name = "textBox1";
-      this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.textBox1.Size = new System.Drawing.Size(346, 129);
-      this.textBox1.TabIndex = 0;
-      this.textBox1.WordWrap = false;
-      // 
-      // execScriptv2
-      // 
-      this.execScriptv2.Location = new System.Drawing.Point(377, 20);
-      this.execScriptv2.Name = "execScriptv2";
-      this.execScriptv2.Size = new System.Drawing.Size(98, 23);
-      this.execScriptv2.TabIndex = 1;
-      this.execScriptv2.Text = "Execute Script";
-      this.execScriptv2.UseVisualStyleBackColor = true;
+      this.execScriptResult.AutoSize = true;
+      this.execScriptResult.Location = new System.Drawing.Point(22, 184);
+      this.execScriptResult.Name = "execScriptResult";
+      this.execScriptResult.Size = new System.Drawing.Size(0, 15);
+      this.execScriptResult.TabIndex = 2;
+      this.execScriptResult.Visible = false;
+      this.execScriptResult.Click += new System.EventHandler(this.label5_Click);
       // 
       // MainForm
       // 
@@ -5022,6 +5034,8 @@ namespace Assistant
       this.tabPage3.ResumeLayout(false);
       this.tabPage3.PerformLayout();
       this.scriptVariablesBox.ResumeLayout(false);
+      this.subScriptsv2.ResumeLayout(false);
+      this.subScriptsv2.PerformLayout();
       this.screenshotTab.ResumeLayout(false);
       this.screenshotTab.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.screenPrev)).EndInit();
@@ -5029,8 +5043,6 @@ namespace Assistant
       this.advancedTab.PerformLayout();
       this.aboutTab.ResumeLayout(false);
       this.aboutTab.PerformLayout();
-      this.subScriptsv2.ResumeLayout(false);
-      this.subScriptsv2.PerformLayout();
       this.ResumeLayout(false);
 
         }
@@ -5066,6 +5078,7 @@ namespace Assistant
         private CheckBox scriptDisablePlayFinish;
         private TabPage subScriptsv2;
         private Button execScriptv2;
-        private TextBox textBox1;
+        private TextBox scriptv2Editor;
+        private Label execScriptResult;
     }
 }
