@@ -6907,22 +6907,6 @@ namespace Assistant
 
     }
 
-    public void olv_FormatCell(object sender, BrightIdeasSoftware.FormatCellEventArgs e)
-    {
-      if (e.ColumnIndex == 1)
-      {
-        Plugin plugin = (Plugin)e.Model;
-        NamedDescriptionDecoration decoration = new NamedDescriptionDecoration();
-        decoration.Title = plugin.Name;
-        decoration.Description = plugin.Description;
-        e.SubItem.Decoration = decoration;
-      }
-    }
-
-    private void olvPlugins_FormatRow(object sender, BrightIdeasSoftware.FormatRowEventArgs e)
-    {
-    }
-
     private void olvPlugins_SelectedIndexChanged(object sender, EventArgs e)
     {
 

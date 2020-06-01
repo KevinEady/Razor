@@ -4468,8 +4468,6 @@ namespace Assistant
       this.olvPlugins.UseCellFormatEvents = true;
       this.olvPlugins.UseCompatibleStateImageBehavior = false;
       this.olvPlugins.View = System.Windows.Forms.View.Details;
-      this.olvPlugins.FormatCell += new System.EventHandler<BrightIdeasSoftware.FormatCellEventArgs>(this.olv_FormatCell);
-      this.olvPlugins.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.olvPlugins_FormatRow);
       this.olvPlugins.SelectedIndexChanged += new System.EventHandler(this.olvPlugins_SelectedIndexChanged);
       // 
       // olvEnabled
@@ -4489,7 +4487,11 @@ namespace Assistant
       // olvRun
       // 
       this.olvRun.AspectName = "Run";
+      this.olvRun.ButtonSize = new System.Drawing.Size(10, 10);
+      this.olvRun.IsButton = true;
+      this.olvRun.Sortable = false;
       this.olvRun.Text = "Run";
+      this.olvRun.Width = 88;
       // 
       // execScriptResult
       // 

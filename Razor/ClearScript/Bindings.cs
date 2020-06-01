@@ -1,5 +1,7 @@
 ﻿using Assistant.ClearScriptBinding;
 using BrightIdeasSoftware;
+using Microsoft.ClearScript;
+using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
 using Newtonsoft.Json;
 using System;
@@ -11,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Ultima;
 
 //namespace Assistant.ClearScriptUtils
 //{
@@ -75,6 +78,28 @@ namespace Assistant.ClearScriptEngine
       InitializeObjectListView();
     }
 
+
+    public static bool Debug = true;
+    internal static void Log(string str, params object[] args)
+    {
+      if (Debug)
+      {
+        try
+        {
+          using (StreamWriter w = new StreamWriter("Plugin.log", true))
+          {
+            w.Write(Engine.MistedDateTime.ToString("HH:mm:ss.fff"));
+            w.Write(":: ");
+            w.WriteLine(str, args);
+            w.Flush();
+          }
+        }
+        catch
+        {
+        }
+      }
+    }
+
     private void InitializeObjectListView()
     {
       // Suppress the string contents of the first column since we are going to use
@@ -84,19 +109,53 @@ namespace Assistant.ClearScriptEngine
       {
         return "";
       };
+
+
+      m_OLV.ButtonClick += objectListView1_ButtonClick;
+      m_OLV.FormatCell += new System.EventHandler<BrightIdeasSoftware.FormatCellEventArgs>(this.olv_FormatCell);
+      m_Cols.run.Renderer = new MyButtonRenderer();
       m_OLV.SetObjects(m_Plugins);
 
+      //m_Cols.run.IsButton = true;
+      //m_OLV.Enabled = false;
+
+    }
+    private void objectListView1_ButtonClick(object sender, BrightIdeasSoftware.CellClickEventArgs e)
+    {
+      Plugin p = (Plugin)e.Model;
+      p.Execute();
+    }
+
+    public class MyButtonRenderer : BrightIdeasSoftware.ColumnButtonRenderer
+    {
+
+      protected override void DrawImageAndText(Graphics g, Rectangle r)
+      {
+
+
+        //var row = (RowObject as Plugin);
+
+        //g.Clear(Color.Green);
+        //g.DrawString(row.Name, new Font("Arial", 12), Brushes.White, r.Left, r.Top);
+
+        base.DrawImageAndText(g, r);
+        //base.DrawImageAndText(g, r);
+      }
     }
 
     public void olv_FormatCell(object sender, BrightIdeasSoftware.FormatCellEventArgs e)
     {
-      if (e.ColumnIndex == 0)
+      if (e.ColumnIndex == 1)
       {
         Plugin plugin = (Plugin)e.Model;
         NamedDescriptionDecoration decoration = new NamedDescriptionDecoration();
         decoration.Title = plugin.Name;
         decoration.Description = plugin.Description;
         e.SubItem.Decoration = decoration;
+      }
+      else if (e.ColumnIndex == 2)
+      {
+        e.SubItem.Text = "Run!!";
       }
     }
 
@@ -107,19 +166,20 @@ namespace Assistant.ClearScriptEngine
 
     private void Recurse(string path)
     {
-      try
+      string[] pluginPaths = Directory.GetFiles(path, "plugin.json");
+      if (pluginPaths.Length == 1)
       {
-        string[] pluginPaths = Directory.GetFiles(path, "plugin.json");
-        if (pluginPaths.Length == 1)
+        try
         {
           Plugin p = new Plugin(pluginPaths[0]);
-          p.Load();
+          p.Load(m_Engine);
           Add(p);
         }
-      }
-      catch
-      {
-        // Assistant.Client.Instance.
+        catch (Exception e)
+        {
+          Log("Could not load plugin {0}: {1}", pluginPaths[0], e.ToString());
+          // Assistant.Client.Instance.
+        }
       }
 
       try
@@ -209,6 +269,7 @@ namespace Assistant.ClearScriptEngine
     string m_ManifestPath;
     Manifest m_Manifest;
     V8Script m_Module;
+    object m_Exports;
     bool m_Enabled;
 
     public string Name
@@ -221,12 +282,17 @@ namespace Assistant.ClearScriptEngine
       get { return m_Manifest.description; }
     }
 
+    public string Run
+    {
+      get { return "Run"; }
+    }
+
     public Plugin(string manifestPath)
     {
       m_ManifestPath = manifestPath;
 
     }
-    public void Load()
+    public void Load(V8ScriptEngine engine)
     {
       using (StreamReader r = new StreamReader(m_ManifestPath))
       {
@@ -236,10 +302,15 @@ namespace Assistant.ClearScriptEngine
 
         using (StreamReader r2 = new StreamReader(mainJs))
         {
-          string js = r.ReadToEnd();
-          // m_Module = Engine.Compile(js);
+          string js = @"import { Plugin } from 'cuo';" + r2.ReadToEnd();
+          m_Module = engine.Compile(new DocumentInfo { Category = ModuleCategory.Standard }, js);
+          m_Exports = engine.Evaluate(m_Module);
         }
       }
+    }
+
+    internal void Execute()
+    {
     }
   }
 }
