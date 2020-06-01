@@ -736,6 +736,7 @@ namespace Assistant
       this.linkScriptGuide = new System.Windows.Forms.LinkLabel();
       this.saveScript = new System.Windows.Forms.Button();
       this.deleteScript = new System.Windows.Forms.Button();
+      this.scriptEditor = new FastColoredTextBoxNS.FastColoredTextBox();
       this.scriptList = new System.Windows.Forms.ListBox();
       this.newScript = new System.Windows.Forms.Button();
       this.setScriptHotkey = new System.Windows.Forms.Button();
@@ -754,6 +755,11 @@ namespace Assistant
       this.addScriptVariable = new System.Windows.Forms.Button();
       this.scriptVariables = new System.Windows.Forms.ListBox();
       this.subScriptsv2 = new System.Windows.Forms.TabPage();
+      this.olvPlugins = new BrightIdeasSoftware.ObjectListView();
+      this.olvEnabled = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+      this.olvPluginName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+      this.olvRun = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+      this.execScriptResult = new System.Windows.Forms.Label();
       this.execScriptv2 = new System.Windows.Forms.Button();
       this.scriptv2Editor = new System.Windows.Forms.TextBox();
       this.screenshotTab = new System.Windows.Forms.TabPage();
@@ -799,12 +805,6 @@ namespace Assistant
       this.linkMain = new System.Windows.Forms.LinkLabel();
       this.label21 = new System.Windows.Forms.Label();
       this.aboutVer = new System.Windows.Forms.Label();
-      this.execScriptResult = new System.Windows.Forms.Label();
-      this.scriptEditor = new FastColoredTextBoxNS.FastColoredTextBox();
-      this.olvPlugins = new BrightIdeasSoftware.ObjectListView();
-      this.olvEnabled = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-      this.olvPluginName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-      this.olvRun = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
       this.tabs.SuspendLayout();
       this.generalTab.SuspendLayout();
       this.subGeneralTab.SuspendLayout();
@@ -850,15 +850,15 @@ namespace Assistant
       this.scriptsTab.SuspendLayout();
       this.subTabScripts.SuspendLayout();
       this.subScripts.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
       this.tabPage3.SuspendLayout();
       this.scriptVariablesBox.SuspendLayout();
       this.subScriptsv2.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).BeginInit();
       this.screenshotTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.screenPrev)).BeginInit();
       this.advancedTab.SuspendLayout();
       this.aboutTab.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).BeginInit();
       this.SuspendLayout();
       // 
       // m_NotifyIcon
@@ -1560,9 +1560,9 @@ namespace Assistant
       // moreOptTab
       // 
       this.moreOptTab.Controls.Add(this.optionsTabCtrl);
-      this.moreOptTab.Location = new System.Drawing.Point(4, 24);
+      this.moreOptTab.Location = new System.Drawing.Point(4, 44);
       this.moreOptTab.Name = "moreOptTab";
-      this.moreOptTab.Size = new System.Drawing.Size(519, 342);
+      this.moreOptTab.Size = new System.Drawing.Size(519, 322);
       this.moreOptTab.TabIndex = 5;
       this.moreOptTab.Text = "Options";
       // 
@@ -2741,9 +2741,9 @@ namespace Assistant
       // displayTab
       // 
       this.displayTab.Controls.Add(this.displayCountersTabCtrl);
-      this.displayTab.Location = new System.Drawing.Point(4, 24);
+      this.displayTab.Location = new System.Drawing.Point(4, 44);
       this.displayTab.Name = "displayTab";
-      this.displayTab.Size = new System.Drawing.Size(519, 342);
+      this.displayTab.Size = new System.Drawing.Size(519, 322);
       this.displayTab.TabIndex = 1;
       this.displayTab.Text = "Display/Counters";
       // 
@@ -3217,9 +3217,9 @@ namespace Assistant
       // 
       this.dressTab.Controls.Add(this.groupBox6);
       this.dressTab.Controls.Add(this.groupBox5);
-      this.dressTab.Location = new System.Drawing.Point(4, 24);
+      this.dressTab.Location = new System.Drawing.Point(4, 44);
       this.dressTab.Name = "dressTab";
-      this.dressTab.Size = new System.Drawing.Size(519, 342);
+      this.dressTab.Size = new System.Drawing.Size(519, 322);
       this.dressTab.TabIndex = 3;
       this.dressTab.Text = "Arm/Dress";
       // 
@@ -3379,9 +3379,9 @@ namespace Assistant
       this.skillsTab.Controls.Add(this.setlocks);
       this.skillsTab.Controls.Add(this.resetDelta);
       this.skillsTab.Controls.Add(this.skillList);
-      this.skillsTab.Location = new System.Drawing.Point(4, 24);
+      this.skillsTab.Location = new System.Drawing.Point(4, 44);
       this.skillsTab.Name = "skillsTab";
-      this.skillsTab.Size = new System.Drawing.Size(519, 342);
+      this.skillsTab.Size = new System.Drawing.Size(519, 322);
       this.skillsTab.TabIndex = 2;
       this.skillsTab.Text = "Skills";
       // 
@@ -3554,9 +3554,9 @@ namespace Assistant
       this.agentsTab.Controls.Add(this.agentB1);
       this.agentsTab.Controls.Add(this.agentB2);
       this.agentsTab.Controls.Add(this.agentB3);
-      this.agentsTab.Location = new System.Drawing.Point(4, 24);
+      this.agentsTab.Location = new System.Drawing.Point(4, 44);
       this.agentsTab.Name = "agentsTab";
-      this.agentsTab.Size = new System.Drawing.Size(519, 342);
+      this.agentsTab.Size = new System.Drawing.Size(519, 322);
       this.agentsTab.TabIndex = 6;
       this.agentsTab.Text = "Agents";
       // 
@@ -3645,9 +3645,9 @@ namespace Assistant
       this.hotkeysTab.Controls.Add(this.hotkeyTree);
       this.hotkeysTab.Controls.Add(this.dohotkey);
       this.hotkeysTab.Controls.Add(this.groupBox8);
-      this.hotkeysTab.Location = new System.Drawing.Point(4, 24);
+      this.hotkeysTab.Location = new System.Drawing.Point(4, 44);
       this.hotkeysTab.Name = "hotkeysTab";
-      this.hotkeysTab.Size = new System.Drawing.Size(519, 342);
+      this.hotkeysTab.Size = new System.Drawing.Size(519, 322);
       this.hotkeysTab.TabIndex = 4;
       this.hotkeysTab.Text = "Hot Keys";
       // 
@@ -3786,9 +3786,9 @@ namespace Assistant
       // macrosTab
       // 
       this.macrosTab.Controls.Add(this.tabControl2);
-      this.macrosTab.Location = new System.Drawing.Point(4, 24);
+      this.macrosTab.Location = new System.Drawing.Point(4, 44);
       this.macrosTab.Name = "macrosTab";
-      this.macrosTab.Size = new System.Drawing.Size(519, 342);
+      this.macrosTab.Size = new System.Drawing.Size(519, 322);
       this.macrosTab.TabIndex = 7;
       this.macrosTab.Text = "Macros";
       // 
@@ -4204,6 +4204,47 @@ namespace Assistant
       this.deleteScript.UseVisualStyleBackColor = true;
       this.deleteScript.Click += new System.EventHandler(this.deleteScript_Click);
       // 
+      // scriptEditor
+      // 
+      this.scriptEditor.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+      this.scriptEditor.AutoScrollMinSize = new System.Drawing.Size(25, 15);
+      this.scriptEditor.BackBrush = null;
+      this.scriptEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(37)))), ((int)(((byte)(56)))));
+      this.scriptEditor.CaretColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(150)))), ((int)(((byte)(150)))));
+      this.scriptEditor.CharHeight = 15;
+      this.scriptEditor.CharWidth = 7;
+      this.scriptEditor.Cursor = System.Windows.Forms.Cursors.IBeam;
+      this.scriptEditor.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+      this.scriptEditor.Font = new System.Drawing.Font("Consolas", 9.75F);
+      this.scriptEditor.ForeColor = System.Drawing.Color.White;
+      this.scriptEditor.IsReplaceMode = false;
+      this.scriptEditor.LeftBracket = '(';
+      this.scriptEditor.LeftBracket2 = '[';
+      this.scriptEditor.LineNumberColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(144)))), ((int)(((byte)(175)))));
+      this.scriptEditor.Location = new System.Drawing.Point(123, 6);
+      this.scriptEditor.Name = "scriptEditor";
+      this.scriptEditor.Paddings = new System.Windows.Forms.Padding(0);
+      this.scriptEditor.RightBracket = ')';
+      this.scriptEditor.RightBracket2 = ']';
+      this.scriptEditor.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+      this.scriptEditor.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("scriptEditor.ServiceColors")));
+      this.scriptEditor.ShowCaretWhenInactive = false;
+      this.scriptEditor.Size = new System.Drawing.Size(303, 273);
+      this.scriptEditor.TabIndex = 20;
+      this.scriptEditor.Zoom = 100;
+      this.scriptEditor.LostFocus += new System.EventHandler(this.scriptEditor_LostFocus);
+      this.scriptEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.scriptEditor_MouseDown);
+      // 
       // scriptList
       // 
       this.scriptList.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -4405,6 +4446,62 @@ namespace Assistant
       this.subScriptsv2.TabIndex = 2;
       this.subScriptsv2.Text = "Scripts v2";
       // 
+      // olvPlugins
+      // 
+      this.olvPlugins.AllColumns.Add(this.olvEnabled);
+      this.olvPlugins.AllColumns.Add(this.olvPluginName);
+      this.olvPlugins.AllColumns.Add(this.olvRun);
+      this.olvPlugins.CellEditUseWholeCell = false;
+      this.olvPlugins.CheckBoxes = true;
+      this.olvPlugins.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.olvEnabled,
+            this.olvPluginName,
+            this.olvRun});
+      this.olvPlugins.Cursor = System.Windows.Forms.Cursors.Default;
+      this.olvPlugins.HideSelection = false;
+      this.olvPlugins.Location = new System.Drawing.Point(6, 108);
+      this.olvPlugins.Name = "olvPlugins";
+      this.olvPlugins.RowHeight = 40;
+      this.olvPlugins.ShowGroups = false;
+      this.olvPlugins.Size = new System.Drawing.Size(486, 171);
+      this.olvPlugins.TabIndex = 4;
+      this.olvPlugins.UseCellFormatEvents = true;
+      this.olvPlugins.UseCompatibleStateImageBehavior = false;
+      this.olvPlugins.View = System.Windows.Forms.View.Details;
+      this.olvPlugins.FormatCell += new System.EventHandler<BrightIdeasSoftware.FormatCellEventArgs>(this.olv_FormatCell);
+      this.olvPlugins.FormatRow += new System.EventHandler<BrightIdeasSoftware.FormatRowEventArgs>(this.olvPlugins_FormatRow);
+      this.olvPlugins.SelectedIndexChanged += new System.EventHandler(this.olvPlugins_SelectedIndexChanged);
+      // 
+      // olvEnabled
+      // 
+      this.olvEnabled.AspectName = "Enabled";
+      this.olvEnabled.Text = "Enabled";
+      this.olvEnabled.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+      this.olvEnabled.Width = 73;
+      // 
+      // olvPluginName
+      // 
+      this.olvPluginName.AspectName = "Plugin";
+      this.olvPluginName.FillsFreeSpace = true;
+      this.olvPluginName.Text = "Plugin";
+      this.olvPluginName.Width = 362;
+      // 
+      // olvRun
+      // 
+      this.olvRun.AspectName = "Run";
+      this.olvRun.Text = "Run";
+      // 
+      // execScriptResult
+      // 
+      this.execScriptResult.AutoSize = true;
+      this.execScriptResult.Location = new System.Drawing.Point(22, 90);
+      this.execScriptResult.Name = "execScriptResult";
+      this.execScriptResult.Size = new System.Drawing.Size(39, 15);
+      this.execScriptResult.TabIndex = 2;
+      this.execScriptResult.Text = "Result";
+      this.execScriptResult.Visible = false;
+      this.execScriptResult.Click += new System.EventHandler(this.label5_Click);
+      // 
       // execScriptv2
       // 
       this.execScriptv2.Location = new System.Drawing.Point(377, 20);
@@ -4424,7 +4521,7 @@ namespace Assistant
       this.scriptv2Editor.Multiline = true;
       this.scriptv2Editor.Name = "scriptv2Editor";
       this.scriptv2Editor.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.scriptv2Editor.Size = new System.Drawing.Size(346, 129);
+      this.scriptv2Editor.Size = new System.Drawing.Size(346, 56);
       this.scriptv2Editor.TabIndex = 0;
       this.scriptv2Editor.Text = "import * from \'abc\';";
       this.scriptv2Editor.WordWrap = false;
@@ -4904,93 +5001,6 @@ namespace Assistant
       this.aboutVer.Text = "Razor v{0}";
       this.aboutVer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
-      // execScriptResult
-      // 
-      this.execScriptResult.AutoSize = true;
-      this.execScriptResult.Location = new System.Drawing.Point(22, 163);
-      this.execScriptResult.Name = "execScriptResult";
-      this.execScriptResult.Size = new System.Drawing.Size(39, 15);
-      this.execScriptResult.TabIndex = 2;
-      this.execScriptResult.Text = "Result";
-      this.execScriptResult.Visible = false;
-      this.execScriptResult.Click += new System.EventHandler(this.label5_Click);
-      // 
-      // scriptEditor
-      // 
-      this.scriptEditor.AutoCompleteBracketsList = new char[] {
-        '(',
-        ')',
-        '{',
-        '}',
-        '[',
-        ']',
-        '\"',
-        '\"',
-        '\'',
-        '\''};
-      this.scriptEditor.AutoScrollMinSize = new System.Drawing.Size(2, 15);
-      this.scriptEditor.BackBrush = null;
-      this.scriptEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(37)))), ((int)(((byte)(56)))));
-      this.scriptEditor.CaretColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(150)))), ((int)(((byte)(150)))));
-      this.scriptEditor.CharHeight = 15;
-      this.scriptEditor.CharWidth = 7;
-      this.scriptEditor.Cursor = System.Windows.Forms.Cursors.IBeam;
-      this.scriptEditor.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-      this.scriptEditor.Font = new System.Drawing.Font("Consolas", 9.75F);
-      this.scriptEditor.ForeColor = System.Drawing.Color.White;
-      this.scriptEditor.IsReplaceMode = false;
-      this.scriptEditor.LeftBracket = '(';
-      this.scriptEditor.LeftBracket2 = '[';
-      this.scriptEditor.LineNumberColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(144)))), ((int)(((byte)(175)))));
-      this.scriptEditor.Location = new System.Drawing.Point(123, 6);
-      this.scriptEditor.Name = "scriptEditor";
-      this.scriptEditor.Paddings = new System.Windows.Forms.Padding(0);
-      this.scriptEditor.RightBracket = ')';
-      this.scriptEditor.RightBracket2 = ']';
-      this.scriptEditor.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
-      this.scriptEditor.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("scriptEditor.ServiceColors")));
-      this.scriptEditor.ShowCaretWhenInactive = false;
-      this.scriptEditor.Size = new System.Drawing.Size(303, 273);
-      this.scriptEditor.TabIndex = 20;
-      this.scriptEditor.Zoom = 100;
-      this.scriptEditor.LostFocus += new System.EventHandler(this.scriptEditor_LostFocus);
-      this.scriptEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.scriptEditor_MouseDown);
-      // 
-      // olvPlugins
-      // 
-      this.olvPlugins.AllColumns.Add(this.olvEnabled);
-      this.olvPlugins.AllColumns.Add(this.olvPluginName);
-      this.olvPlugins.AllColumns.Add(this.olvRun);
-      this.olvPlugins.CellEditUseWholeCell = false;
-      this.olvPlugins.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.olvEnabled,
-            this.olvPluginName,
-            this.olvRun});
-      this.olvPlugins.Cursor = System.Windows.Forms.Cursors.Default;
-      this.olvPlugins.HideSelection = false;
-      this.olvPlugins.Location = new System.Drawing.Point(122, 172);
-      this.olvPlugins.Name = "olvPlugins";
-      this.olvPlugins.Size = new System.Drawing.Size(330, 97);
-      this.olvPlugins.TabIndex = 4;
-      this.olvPlugins.UseCompatibleStateImageBehavior = false;
-      this.olvPlugins.View = System.Windows.Forms.View.Details;
-      this.olvPlugins.SelectedIndexChanged += new System.EventHandler(this.olvPlugins_SelectedIndexChanged);
-      // 
-      // olvEnabled
-      // 
-      this.olvEnabled.AspectName = "Enabled";
-      this.olvEnabled.Text = "Enabled";
-      // 
-      // olvPluginName
-      // 
-      this.olvPluginName.AspectName = "Plugin";
-      this.olvPluginName.Text = "Plugin";
-      // 
-      // olvRun
-      // 
-      this.olvRun.AspectName = "Run";
-      this.olvRun.Text = "Run";
-      // 
       // MainForm
       // 
       this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
@@ -5074,11 +5084,13 @@ namespace Assistant
       this.subTabScripts.ResumeLayout(false);
       this.subScripts.ResumeLayout(false);
       this.subScripts.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).EndInit();
       this.tabPage3.ResumeLayout(false);
       this.tabPage3.PerformLayout();
       this.scriptVariablesBox.ResumeLayout(false);
       this.subScriptsv2.ResumeLayout(false);
       this.subScriptsv2.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).EndInit();
       this.screenshotTab.ResumeLayout(false);
       this.screenshotTab.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.screenPrev)).EndInit();
@@ -5086,8 +5098,6 @@ namespace Assistant
       this.advancedTab.PerformLayout();
       this.aboutTab.ResumeLayout(false);
       this.aboutTab.PerformLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).EndInit();
       this.ResumeLayout(false);
 
         }

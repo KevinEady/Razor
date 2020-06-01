@@ -40,6 +40,7 @@ using Assistant.Scripts;
 using Assistant.UI;
 using Ultima;
 using Assistant.ClearScriptBinding;
+using Assistant.ClearScriptEngine;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
 using ContainerLabels = Assistant.UI.ContainerLabels;
@@ -79,7 +80,7 @@ namespace Assistant
       new StatsTimer(this).Start();
       Language.LoadControlNames(this);
 
-     ClearScriptEngine.PluginManager.InitializeManager(this.olvPlugins);
+      new ClearScriptEngine.PluginManager(olvPlugins);
 
       FriendsManager.SetControls(friendsGroup, friendsList);
       DressList.SetControls(dressList, dressItems);
@@ -6819,7 +6820,9 @@ namespace Assistant
         return null;// throw new NotImplementedException();
       }
     }
-    private void execScriptv2_Click(object sender, EventArgs e)
+
+
+      private void execScriptv2_Click(object sender, EventArgs e)
     {
       // create a script engine
 
@@ -6829,6 +6832,7 @@ namespace Assistant
       {
 
         // expose a host type
+        //this.olvPlugins = this.objectListView1_FormatCell;
 
         //engine.AddHostType("Console", typeof(Console));
 
@@ -6901,6 +6905,22 @@ namespace Assistant
     private void scriptv2Editor_TextChanged(object sender, EventArgs e)
     {
 
+    }
+
+    public void olv_FormatCell(object sender, BrightIdeasSoftware.FormatCellEventArgs e)
+    {
+      if (e.ColumnIndex == 1)
+      {
+        Plugin plugin = (Plugin)e.Model;
+        NamedDescriptionDecoration decoration = new NamedDescriptionDecoration();
+        decoration.Title = plugin.Name;
+        decoration.Description = plugin.Description;
+        e.SubItem.Decoration = decoration;
+      }
+    }
+
+    private void olvPlugins_FormatRow(object sender, BrightIdeasSoftware.FormatRowEventArgs e)
+    {
     }
 
     private void olvPlugins_SelectedIndexChanged(object sender, EventArgs e)

@@ -5,10 +5,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 //namespace Assistant.ClearScriptUtils
 //{
@@ -47,15 +49,63 @@ namespace Assistant.ClearScriptEngine
 
   public class PluginManager
   {
-    static V8ScriptEngine Engine;
-
-    public static void InitializeManager(ObjectListView olv)
+    V8ScriptEngine m_Engine;
+    ObjectListView m_OLV;
+    struct OLVColumns
     {
-      Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
+      public OLVColumn enabled, name, run;
+    };
+
+    OLVColumns m_Cols;
+
+    List<Plugin> m_Plugins;
+
+
+    public PluginManager(ObjectListView olv)
+    {
+      m_OLV = olv;
+      m_Plugins = new List<Plugin>();
+      m_Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
+      m_Cols = new OLVColumns();
+      m_Cols.enabled = olv.GetColumn(0);
+      m_Cols.name = olv.GetColumn(1);
+      m_Cols.run = olv.GetColumn(2);
+
       Recurse(Config.GetUserDirectory("Plugins"));
+      InitializeObjectListView();
     }
 
-    private static void Recurse(string path)
+    private void InitializeObjectListView()
+    {
+      // Suppress the string contents of the first column since we are going to use
+      // a decoration to draw it.
+
+      m_Cols.enabled.AspectToStringConverter = delegate (object x)
+      {
+        return "";
+      };
+      m_OLV.SetObjects(m_Plugins);
+
+    }
+
+    public void olv_FormatCell(object sender, BrightIdeasSoftware.FormatCellEventArgs e)
+    {
+      if (e.ColumnIndex == 0)
+      {
+        Plugin plugin = (Plugin)e.Model;
+        NamedDescriptionDecoration decoration = new NamedDescriptionDecoration();
+        decoration.Title = plugin.Name;
+        decoration.Description = plugin.Description;
+        e.SubItem.Decoration = decoration;
+      }
+    }
+
+    private void Add(Plugin p)
+    {
+      m_Plugins.Add(p);
+    }
+
+    private void Recurse(string path)
     {
       try
       {
@@ -63,11 +113,13 @@ namespace Assistant.ClearScriptEngine
         if (pluginPaths.Length == 1)
         {
           Plugin p = new Plugin(pluginPaths[0]);
+          p.Load();
+          Add(p);
         }
       }
       catch
       {
-       // Assistant.Client.Instance.
+        // Assistant.Client.Instance.
       }
 
       try
@@ -85,38 +137,107 @@ namespace Assistant.ClearScriptEngine
       {
       }
     }
+  }
+  public class NamedDescriptionDecoration : BrightIdeasSoftware.AbstractDecoration
+  {
+    public ImageList ImageList;
+    public string ImageName;
+    public string Title;
+    public string Description;
 
-    class Plugin
+    public Font TitleFont = new Font("Segoe UI", 9, FontStyle.Bold);
+    public Color TitleColor = Color.FromArgb(255, 32, 32, 32);
+    public Font DescripionFont = new Font("Segoe UI", 9);
+    public Color DescriptionColor = Color.FromArgb(255, 96, 96, 96);
+    public Size CellPadding = new Size(2, 2);
+
+    public override void Draw(BrightIdeasSoftware.ObjectListView olv, Graphics g, Rectangle r)
     {
+      Rectangle cellBounds = this.CellBounds;
+      cellBounds.Inflate(-this.CellPadding.Width, -this.CellPadding.Height);
+      Rectangle textBounds = cellBounds;
 
-      private class Manifest
+      if (this.ImageList != null && !String.IsNullOrEmpty(this.ImageName))
       {
-        public string name { get; set; }
-        public string version { get; set; }
-        public string description { get; set; }
-        public string main { get; set; }
+        g.DrawImage(this.ImageList.Images[this.ImageName], cellBounds.Location);
+        textBounds.X += this.ImageList.ImageSize.Width;
+        textBounds.Width -= this.ImageList.ImageSize.Width;
       }
 
-      object m_Settings;
-      string m_ManifestPath;
-      Manifest m_Manifest;
-      V8Script m_Module;
-      bool m_Enabled;
+      //g.DrawRectangle(Pens.Red, textBounds);
 
-      public Plugin(string manifestPath)
+      // Draw the title
+      using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap))
       {
-        m_ManifestPath = manifestPath;
-        using (StreamReader r = new StreamReader(manifestPath))
+        fmt.Trimming = StringTrimming.EllipsisCharacter;
+        fmt.Alignment = StringAlignment.Near;
+        fmt.LineAlignment = StringAlignment.Near;
+        using (SolidBrush b = new SolidBrush(this.TitleColor))
         {
-          string json = r.ReadToEnd();
-          m_Manifest = JsonConvert.DeserializeObject<Manifest>(json);
-          string mainJs = Path.Combine(Path.GetDirectoryName(manifestPath), m_Manifest.main);
+          g.DrawString(this.Title, this.TitleFont, b, textBounds, fmt);
+        }
+        // Draw the description
+        SizeF size = g.MeasureString(this.Title, this.TitleFont, (int)textBounds.Width, fmt);
+        textBounds.Y += (int)size.Height;
+        textBounds.Height -= (int)size.Height;
+      }
 
-          using (StreamReader r2 = new StreamReader(mainJs))
-          {
-            string js = r.ReadToEnd();
-            m_Module = Engine.Compile(js);
-          }
+      // Draw the description
+      using (StringFormat fmt2 = new StringFormat())
+      {
+        fmt2.Trimming = StringTrimming.EllipsisCharacter;
+        using (SolidBrush b = new SolidBrush(this.DescriptionColor))
+        {
+          g.DrawString(this.Description, this.DescripionFont, b, textBounds, fmt2);
+        }
+      }
+    }
+  }
+
+  public class Plugin
+  {
+
+    private class Manifest
+    {
+      public string name { get; set; }
+      public string version { get; set; }
+      public string description { get; set; }
+      public string main { get; set; }
+    }
+
+    object m_Settings;
+    string m_ManifestPath;
+    Manifest m_Manifest;
+    V8Script m_Module;
+    bool m_Enabled;
+
+    public string Name
+    {
+      get { return m_Manifest.name; }
+    }
+
+    public string Description
+    {
+      get { return m_Manifest.description; }
+    }
+
+    public Plugin(string manifestPath)
+    {
+      m_ManifestPath = manifestPath;
+
+    }
+    public void Load()
+    {
+      using (StreamReader r = new StreamReader(m_ManifestPath))
+      {
+        string json = r.ReadToEnd();
+        m_Manifest = JsonConvert.DeserializeObject<Manifest>(json);
+        string mainJs = Path.Combine(Path.GetDirectoryName(m_ManifestPath), m_Manifest.main);
+
+        using (StreamReader r2 = new StreamReader(mainJs))
+        {
+          string js = r.ReadToEnd();
+          // m_Module = Engine.Compile(js);
         }
       }
     }

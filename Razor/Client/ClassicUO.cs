@@ -147,7 +147,10 @@ namespace Assistant
         private static OnDisconnected _onDisconnected;
         private static OnFocusGained _onFocusGained;
         private static OnFocusLost _onFocusLost;
+        private static OnConsoleLog _consoleLog;
         private IntPtr m_ClientWindow;
+
+        private delegate void OnConsoleLog(int level, string msg);
 
         public override void SetMapWndHandle(Form mapWnd)
         {
@@ -215,6 +218,7 @@ namespace Assistant
             _onDisconnected = OnDisconnected;
             _onFocusGained = OnFocusGained;
             _onFocusLost = OnFocusLost;
+            _consoleLog = ConsoleLog;
             header->Tick = Marshal.GetFunctionPointerForDelegate(_tick);
             header->OnRecv = Marshal.GetFunctionPointerForDelegate(_recv);
             header->OnSend = Marshal.GetFunctionPointerForDelegate(_send);
@@ -227,6 +231,8 @@ namespace Assistant
             header->OnDisconnected = Marshal.GetFunctionPointerForDelegate(_onDisconnected);
             header->OnFocusGained = Marshal.GetFunctionPointerForDelegate(_onFocusGained);
             header->OnFocusLost = Marshal.GetFunctionPointerForDelegate(_onFocusLost);
+
+
       return true;
         }
 
@@ -244,6 +250,11 @@ namespace Assistant
         private void OnPlayerPositionChanged(int x, int y, int z)
         {
             World.Player.Position = new Point3D(x, y, z);
+        }
+
+        private void ConsoleLog(int level, string message)
+        {
+
         }
 
         private unsafe bool OnRecv(ref byte[] data, ref int length)
