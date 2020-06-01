@@ -227,8 +227,7 @@ namespace Assistant
             header->OnDisconnected = Marshal.GetFunctionPointerForDelegate(_onDisconnected);
             header->OnFocusGained = Marshal.GetFunctionPointerForDelegate(_onFocusGained);
             header->OnFocusLost = Marshal.GetFunctionPointerForDelegate(_onFocusLost);
-
-            return true;
+      return true;
         }
 
         public unsafe override bool InstallHooks(IntPtr pluginPtr)

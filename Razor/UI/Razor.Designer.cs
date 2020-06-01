@@ -801,6 +801,10 @@ namespace Assistant
       this.aboutVer = new System.Windows.Forms.Label();
       this.execScriptResult = new System.Windows.Forms.Label();
       this.scriptEditor = new FastColoredTextBoxNS.FastColoredTextBox();
+      this.olvPlugins = new BrightIdeasSoftware.ObjectListView();
+      this.olvEnabled = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+      this.olvPluginName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+      this.olvRun = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
       this.tabs.SuspendLayout();
       this.generalTab.SuspendLayout();
       this.subGeneralTab.SuspendLayout();
@@ -854,6 +858,7 @@ namespace Assistant
       this.advancedTab.SuspendLayout();
       this.aboutTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).BeginInit();
       this.SuspendLayout();
       // 
       // m_NotifyIcon
@@ -4389,6 +4394,7 @@ namespace Assistant
       // subScriptsv2
       // 
       this.subScriptsv2.BackColor = System.Drawing.SystemColors.Control;
+      this.subScriptsv2.Controls.Add(this.olvPlugins);
       this.subScriptsv2.Controls.Add(this.execScriptResult);
       this.subScriptsv2.Controls.Add(this.execScriptv2);
       this.subScriptsv2.Controls.Add(this.scriptv2Editor);
@@ -4901,10 +4907,11 @@ namespace Assistant
       // execScriptResult
       // 
       this.execScriptResult.AutoSize = true;
-      this.execScriptResult.Location = new System.Drawing.Point(22, 184);
+      this.execScriptResult.Location = new System.Drawing.Point(22, 163);
       this.execScriptResult.Name = "execScriptResult";
-      this.execScriptResult.Size = new System.Drawing.Size(0, 15);
+      this.execScriptResult.Size = new System.Drawing.Size(39, 15);
       this.execScriptResult.TabIndex = 2;
+      this.execScriptResult.Text = "Result";
       this.execScriptResult.Visible = false;
       this.execScriptResult.Click += new System.EventHandler(this.label5_Click);
       // 
@@ -4948,6 +4955,41 @@ namespace Assistant
       this.scriptEditor.Zoom = 100;
       this.scriptEditor.LostFocus += new System.EventHandler(this.scriptEditor_LostFocus);
       this.scriptEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.scriptEditor_MouseDown);
+      // 
+      // olvPlugins
+      // 
+      this.olvPlugins.AllColumns.Add(this.olvEnabled);
+      this.olvPlugins.AllColumns.Add(this.olvPluginName);
+      this.olvPlugins.AllColumns.Add(this.olvRun);
+      this.olvPlugins.CellEditUseWholeCell = false;
+      this.olvPlugins.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.olvEnabled,
+            this.olvPluginName,
+            this.olvRun});
+      this.olvPlugins.Cursor = System.Windows.Forms.Cursors.Default;
+      this.olvPlugins.HideSelection = false;
+      this.olvPlugins.Location = new System.Drawing.Point(122, 172);
+      this.olvPlugins.Name = "olvPlugins";
+      this.olvPlugins.Size = new System.Drawing.Size(330, 97);
+      this.olvPlugins.TabIndex = 4;
+      this.olvPlugins.UseCompatibleStateImageBehavior = false;
+      this.olvPlugins.View = System.Windows.Forms.View.Details;
+      this.olvPlugins.SelectedIndexChanged += new System.EventHandler(this.olvPlugins_SelectedIndexChanged);
+      // 
+      // olvEnabled
+      // 
+      this.olvEnabled.AspectName = "Enabled";
+      this.olvEnabled.Text = "Enabled";
+      // 
+      // olvPluginName
+      // 
+      this.olvPluginName.AspectName = "Plugin";
+      this.olvPluginName.Text = "Plugin";
+      // 
+      // olvRun
+      // 
+      this.olvRun.AspectName = "Run";
+      this.olvRun.Text = "Run";
       // 
       // MainForm
       // 
@@ -5045,6 +5087,7 @@ namespace Assistant
       this.aboutTab.ResumeLayout(false);
       this.aboutTab.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).EndInit();
       this.ResumeLayout(false);
 
         }
@@ -5082,5 +5125,9 @@ namespace Assistant
         private Button execScriptv2;
         private TextBox scriptv2Editor;
         private Label execScriptResult;
+        private BrightIdeasSoftware.ObjectListView olvPlugins;
+        private BrightIdeasSoftware.OLVColumn olvEnabled;
+        private BrightIdeasSoftware.OLVColumn olvPluginName;
+        private BrightIdeasSoftware.OLVColumn olvRun;
     }
 }

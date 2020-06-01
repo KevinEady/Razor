@@ -1004,6 +1004,11 @@ namespace Assistant
                 Directory.CreateDirectory(Path.Combine(appDir, "Macros"));
             }
 
+            if (!Directory.Exists(Path.Combine(appDir, "Plugins")))
+            {
+              Directory.CreateDirectory(Path.Combine(appDir, "Plugins"));
+            }
+
             if (!Directory.Exists(Path.Combine(appDir, "Profiles")))
             {
                 Directory.CreateDirectory(Path.Combine(appDir, "Profiles"));

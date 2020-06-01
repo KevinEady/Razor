@@ -1,7 +1,11 @@
-﻿using Microsoft.ClearScript.V8;
+﻿using Assistant.ClearScriptBinding;
+using BrightIdeasSoftware;
+using Microsoft.ClearScript.V8;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,17 +42,87 @@ using System.Threading.Tasks;
 //  }
 //}
 
-namespace Assistant.ClearScriptUtils
+namespace Assistant.ClearScriptEngine
 {
-  public class Plugin
+
+  public class PluginManager
   {
-    object m_settings;
-    public Plugin(object o)
+    static V8ScriptEngine Engine;
+
+    public static void InitializeManager(ObjectListView olv)
     {
-      m_settings = o;
+      Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
+      Recurse(Config.GetUserDirectory("Plugins"));
+    }
+
+    private static void Recurse(string path)
+    {
+      try
+      {
+        string[] pluginPaths = Directory.GetFiles(path, "plugin.json");
+        if (pluginPaths.Length == 1)
+        {
+          Plugin p = new Plugin(pluginPaths[0]);
+        }
+      }
+      catch
+      {
+       // Assistant.Client.Instance.
+      }
+
+      try
+      {
+        string[] dirs = Directory.GetDirectories(path);
+        for (int i = 0; i < dirs.Length; i++)
+        {
+          if (dirs[i] != "" && dirs[i] != "." && dirs[i] != "..")
+          {
+            Recurse(dirs[i]);
+          }
+        }
+      }
+      catch
+      {
+      }
+    }
+
+    class Plugin
+    {
+
+      private class Manifest
+      {
+        public string name { get; set; }
+        public string version { get; set; }
+        public string description { get; set; }
+        public string main { get; set; }
+      }
+
+      object m_Settings;
+      string m_ManifestPath;
+      Manifest m_Manifest;
+      V8Script m_Module;
+      bool m_Enabled;
+
+      public Plugin(string manifestPath)
+      {
+        m_ManifestPath = manifestPath;
+        using (StreamReader r = new StreamReader(manifestPath))
+        {
+          string json = r.ReadToEnd();
+          m_Manifest = JsonConvert.DeserializeObject<Manifest>(json);
+          string mainJs = Path.Combine(Path.GetDirectoryName(manifestPath), m_Manifest.main);
+
+          using (StreamReader r2 = new StreamReader(mainJs))
+          {
+            string js = r.ReadToEnd();
+            m_Module = Engine.Compile(js);
+          }
+        }
+      }
     }
   }
 }
+
 namespace Assistant.ClearScriptBinding
 {
   public class Player

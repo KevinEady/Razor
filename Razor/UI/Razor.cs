@@ -79,6 +79,8 @@ namespace Assistant
       new StatsTimer(this).Start();
       Language.LoadControlNames(this);
 
+     ClearScriptEngine.PluginManager.InitializeManager(this.olvPlugins);
+
       FriendsManager.SetControls(friendsGroup, friendsList);
       DressList.SetControls(dressList, dressItems);
       TargetFilterManager.SetControls(targetFilter);
@@ -6886,7 +6888,7 @@ namespace Assistant
 
         //Console.WriteLine(engine.Script.person.name);
 
-
+       // this.ovlPlugins;
       }
 
     }
@@ -6897,6 +6899,11 @@ namespace Assistant
     }
 
     private void scriptv2Editor_TextChanged(object sender, EventArgs e)
+    {
+
+    }
+
+    private void olvPlugins_SelectedIndexChanged(object sender, EventArgs e)
     {
 
     }
