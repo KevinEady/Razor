@@ -736,7 +736,6 @@ namespace Assistant
       this.linkScriptGuide = new System.Windows.Forms.LinkLabel();
       this.saveScript = new System.Windows.Forms.Button();
       this.deleteScript = new System.Windows.Forms.Button();
-      this.scriptEditor = new FastColoredTextBoxNS.FastColoredTextBox();
       this.scriptList = new System.Windows.Forms.ListBox();
       this.newScript = new System.Windows.Forms.Button();
       this.setScriptHotkey = new System.Windows.Forms.Button();
@@ -801,6 +800,7 @@ namespace Assistant
       this.label21 = new System.Windows.Forms.Label();
       this.aboutVer = new System.Windows.Forms.Label();
       this.execScriptResult = new System.Windows.Forms.Label();
+      this.scriptEditor = new FastColoredTextBoxNS.FastColoredTextBox();
       this.tabs.SuspendLayout();
       this.generalTab.SuspendLayout();
       this.subGeneralTab.SuspendLayout();
@@ -846,7 +846,6 @@ namespace Assistant
       this.scriptsTab.SuspendLayout();
       this.subTabScripts.SuspendLayout();
       this.subScripts.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
       this.tabPage3.SuspendLayout();
       this.scriptVariablesBox.SuspendLayout();
       this.subScriptsv2.SuspendLayout();
@@ -854,6 +853,7 @@ namespace Assistant
       ((System.ComponentModel.ISupportInitialize)(this.screenPrev)).BeginInit();
       this.advancedTab.SuspendLayout();
       this.aboutTab.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).BeginInit();
       this.SuspendLayout();
       // 
       // m_NotifyIcon
@@ -1555,9 +1555,9 @@ namespace Assistant
       // moreOptTab
       // 
       this.moreOptTab.Controls.Add(this.optionsTabCtrl);
-      this.moreOptTab.Location = new System.Drawing.Point(4, 44);
+      this.moreOptTab.Location = new System.Drawing.Point(4, 24);
       this.moreOptTab.Name = "moreOptTab";
-      this.moreOptTab.Size = new System.Drawing.Size(519, 322);
+      this.moreOptTab.Size = new System.Drawing.Size(519, 342);
       this.moreOptTab.TabIndex = 5;
       this.moreOptTab.Text = "Options";
       // 
@@ -2736,9 +2736,9 @@ namespace Assistant
       // displayTab
       // 
       this.displayTab.Controls.Add(this.displayCountersTabCtrl);
-      this.displayTab.Location = new System.Drawing.Point(4, 44);
+      this.displayTab.Location = new System.Drawing.Point(4, 24);
       this.displayTab.Name = "displayTab";
-      this.displayTab.Size = new System.Drawing.Size(519, 322);
+      this.displayTab.Size = new System.Drawing.Size(519, 342);
       this.displayTab.TabIndex = 1;
       this.displayTab.Text = "Display/Counters";
       // 
@@ -3212,9 +3212,9 @@ namespace Assistant
       // 
       this.dressTab.Controls.Add(this.groupBox6);
       this.dressTab.Controls.Add(this.groupBox5);
-      this.dressTab.Location = new System.Drawing.Point(4, 44);
+      this.dressTab.Location = new System.Drawing.Point(4, 24);
       this.dressTab.Name = "dressTab";
-      this.dressTab.Size = new System.Drawing.Size(519, 322);
+      this.dressTab.Size = new System.Drawing.Size(519, 342);
       this.dressTab.TabIndex = 3;
       this.dressTab.Text = "Arm/Dress";
       // 
@@ -3374,9 +3374,9 @@ namespace Assistant
       this.skillsTab.Controls.Add(this.setlocks);
       this.skillsTab.Controls.Add(this.resetDelta);
       this.skillsTab.Controls.Add(this.skillList);
-      this.skillsTab.Location = new System.Drawing.Point(4, 44);
+      this.skillsTab.Location = new System.Drawing.Point(4, 24);
       this.skillsTab.Name = "skillsTab";
-      this.skillsTab.Size = new System.Drawing.Size(519, 322);
+      this.skillsTab.Size = new System.Drawing.Size(519, 342);
       this.skillsTab.TabIndex = 2;
       this.skillsTab.Text = "Skills";
       // 
@@ -3549,9 +3549,9 @@ namespace Assistant
       this.agentsTab.Controls.Add(this.agentB1);
       this.agentsTab.Controls.Add(this.agentB2);
       this.agentsTab.Controls.Add(this.agentB3);
-      this.agentsTab.Location = new System.Drawing.Point(4, 44);
+      this.agentsTab.Location = new System.Drawing.Point(4, 24);
       this.agentsTab.Name = "agentsTab";
-      this.agentsTab.Size = new System.Drawing.Size(519, 322);
+      this.agentsTab.Size = new System.Drawing.Size(519, 342);
       this.agentsTab.TabIndex = 6;
       this.agentsTab.Text = "Agents";
       // 
@@ -3640,9 +3640,9 @@ namespace Assistant
       this.hotkeysTab.Controls.Add(this.hotkeyTree);
       this.hotkeysTab.Controls.Add(this.dohotkey);
       this.hotkeysTab.Controls.Add(this.groupBox8);
-      this.hotkeysTab.Location = new System.Drawing.Point(4, 44);
+      this.hotkeysTab.Location = new System.Drawing.Point(4, 24);
       this.hotkeysTab.Name = "hotkeysTab";
-      this.hotkeysTab.Size = new System.Drawing.Size(519, 322);
+      this.hotkeysTab.Size = new System.Drawing.Size(519, 342);
       this.hotkeysTab.TabIndex = 4;
       this.hotkeysTab.Text = "Hot Keys";
       // 
@@ -3781,9 +3781,9 @@ namespace Assistant
       // macrosTab
       // 
       this.macrosTab.Controls.Add(this.tabControl2);
-      this.macrosTab.Location = new System.Drawing.Point(4, 44);
+      this.macrosTab.Location = new System.Drawing.Point(4, 24);
       this.macrosTab.Name = "macrosTab";
-      this.macrosTab.Size = new System.Drawing.Size(519, 322);
+      this.macrosTab.Size = new System.Drawing.Size(519, 342);
       this.macrosTab.TabIndex = 7;
       this.macrosTab.Text = "Macros";
       // 
@@ -4199,47 +4199,6 @@ namespace Assistant
       this.deleteScript.UseVisualStyleBackColor = true;
       this.deleteScript.Click += new System.EventHandler(this.deleteScript_Click);
       // 
-      // scriptEditor
-      // 
-      this.scriptEditor.AutoCompleteBracketsList = new char[] {
-        '(',
-        ')',
-        '{',
-        '}',
-        '[',
-        ']',
-        '\"',
-        '\"',
-        '\'',
-        '\''};
-      this.scriptEditor.AutoScrollMinSize = new System.Drawing.Size(25, 15);
-      this.scriptEditor.BackBrush = null;
-      this.scriptEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(37)))), ((int)(((byte)(56)))));
-      this.scriptEditor.CaretColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(150)))), ((int)(((byte)(150)))));
-      this.scriptEditor.CharHeight = 15;
-      this.scriptEditor.CharWidth = 7;
-      this.scriptEditor.Cursor = System.Windows.Forms.Cursors.IBeam;
-      this.scriptEditor.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-      this.scriptEditor.Font = new System.Drawing.Font("Consolas", 9.75F);
-      this.scriptEditor.ForeColor = System.Drawing.Color.White;
-      this.scriptEditor.IsReplaceMode = false;
-      this.scriptEditor.LeftBracket = '(';
-      this.scriptEditor.LeftBracket2 = '[';
-      this.scriptEditor.LineNumberColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(144)))), ((int)(((byte)(175)))));
-      this.scriptEditor.Location = new System.Drawing.Point(123, 6);
-      this.scriptEditor.Name = "scriptEditor";
-      this.scriptEditor.Paddings = new System.Windows.Forms.Padding(0);
-      this.scriptEditor.RightBracket = ')';
-      this.scriptEditor.RightBracket2 = ']';
-      this.scriptEditor.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
-      this.scriptEditor.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("scriptEditor.ServiceColors")));
-      this.scriptEditor.ShowCaretWhenInactive = false;
-      this.scriptEditor.Size = new System.Drawing.Size(303, 273);
-      this.scriptEditor.TabIndex = 20;
-      this.scriptEditor.Zoom = 100;
-      this.scriptEditor.LostFocus += new System.EventHandler(this.scriptEditor_LostFocus);
-      this.scriptEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.scriptEditor_MouseDown);
-      // 
       // scriptList
       // 
       this.scriptList.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -4461,7 +4420,9 @@ namespace Assistant
       this.scriptv2Editor.ScrollBars = System.Windows.Forms.ScrollBars.Both;
       this.scriptv2Editor.Size = new System.Drawing.Size(346, 129);
       this.scriptv2Editor.TabIndex = 0;
+      this.scriptv2Editor.Text = "import * from \'abc\';";
       this.scriptv2Editor.WordWrap = false;
+      this.scriptv2Editor.TextChanged += new System.EventHandler(this.scriptv2Editor_TextChanged);
       // 
       // screenshotTab
       // 
@@ -4947,6 +4908,47 @@ namespace Assistant
       this.execScriptResult.Visible = false;
       this.execScriptResult.Click += new System.EventHandler(this.label5_Click);
       // 
+      // scriptEditor
+      // 
+      this.scriptEditor.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+      this.scriptEditor.AutoScrollMinSize = new System.Drawing.Size(2, 15);
+      this.scriptEditor.BackBrush = null;
+      this.scriptEditor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(37)))), ((int)(((byte)(56)))));
+      this.scriptEditor.CaretColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(150)))), ((int)(((byte)(150)))));
+      this.scriptEditor.CharHeight = 15;
+      this.scriptEditor.CharWidth = 7;
+      this.scriptEditor.Cursor = System.Windows.Forms.Cursors.IBeam;
+      this.scriptEditor.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+      this.scriptEditor.Font = new System.Drawing.Font("Consolas", 9.75F);
+      this.scriptEditor.ForeColor = System.Drawing.Color.White;
+      this.scriptEditor.IsReplaceMode = false;
+      this.scriptEditor.LeftBracket = '(';
+      this.scriptEditor.LeftBracket2 = '[';
+      this.scriptEditor.LineNumberColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(144)))), ((int)(((byte)(175)))));
+      this.scriptEditor.Location = new System.Drawing.Point(123, 6);
+      this.scriptEditor.Name = "scriptEditor";
+      this.scriptEditor.Paddings = new System.Windows.Forms.Padding(0);
+      this.scriptEditor.RightBracket = ')';
+      this.scriptEditor.RightBracket2 = ']';
+      this.scriptEditor.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+      this.scriptEditor.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("scriptEditor.ServiceColors")));
+      this.scriptEditor.ShowCaretWhenInactive = false;
+      this.scriptEditor.Size = new System.Drawing.Size(303, 273);
+      this.scriptEditor.TabIndex = 20;
+      this.scriptEditor.Zoom = 100;
+      this.scriptEditor.LostFocus += new System.EventHandler(this.scriptEditor_LostFocus);
+      this.scriptEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.scriptEditor_MouseDown);
+      // 
       // MainForm
       // 
       this.AutoScaleBaseSize = new System.Drawing.Size(6, 16);
@@ -5030,7 +5032,6 @@ namespace Assistant
       this.subTabScripts.ResumeLayout(false);
       this.subScripts.ResumeLayout(false);
       this.subScripts.PerformLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).EndInit();
       this.tabPage3.ResumeLayout(false);
       this.tabPage3.PerformLayout();
       this.scriptVariablesBox.ResumeLayout(false);
@@ -5043,6 +5044,7 @@ namespace Assistant
       this.advancedTab.PerformLayout();
       this.aboutTab.ResumeLayout(false);
       this.aboutTab.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.scriptEditor)).EndInit();
       this.ResumeLayout(false);
 
         }
