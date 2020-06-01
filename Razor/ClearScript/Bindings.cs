@@ -74,6 +74,9 @@ namespace Assistant.ClearScriptEngine
       m_Cols.name = olv.GetColumn(1);
       m_Cols.run = olv.GetColumn(2);
 
+      m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
+      m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"export class Plugin { }");
+
       Recurse(Config.GetUserDirectory("Plugins"));
       InitializeObjectListView();
     }
@@ -123,7 +126,7 @@ namespace Assistant.ClearScriptEngine
     private void objectListView1_ButtonClick(object sender, BrightIdeasSoftware.CellClickEventArgs e)
     {
       Plugin p = (Plugin)e.Model;
-      p.Execute();
+      p.Execute(m_Engine);
     }
 
     public class MyButtonRenderer : BrightIdeasSoftware.ColumnButtonRenderer
@@ -269,7 +272,7 @@ namespace Assistant.ClearScriptEngine
     string m_ManifestPath;
     Manifest m_Manifest;
     V8Script m_Module;
-    object m_Exports;
+    dynamic m_Exports;
     bool m_Enabled;
 
     public string Name
@@ -300,17 +303,21 @@ namespace Assistant.ClearScriptEngine
         m_Manifest = JsonConvert.DeserializeObject<Manifest>(json);
         string mainJs = Path.Combine(Path.GetDirectoryName(m_ManifestPath), m_Manifest.main);
 
-        using (StreamReader r2 = new StreamReader(mainJs))
-        {
-          string js = @"import { Plugin } from 'cuo';" + r2.ReadToEnd();
-          m_Module = engine.Compile(new DocumentInfo { Category = ModuleCategory.Standard }, js);
-          m_Exports = engine.Evaluate(m_Module);
-        }
+        string js = @"import * as plugin from '" + new Uri(mainJs).AbsoluteUri + "'; plugin;";
+        m_Module = engine.Compile(new DocumentInfo { Category = ModuleCategory.Standard }, js);
+
+        m_Exports = engine.Evaluate(m_Module);
+
+
+        PluginManager.Log("The square is {0}", m_Exports["default"](3));
+
       }
     }
 
-    internal void Execute()
+
+    internal void Execute(V8ScriptEngine engine)
     {
+      // engine.
     }
   }
 }
