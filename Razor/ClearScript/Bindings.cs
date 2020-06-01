@@ -80,14 +80,18 @@ namespace Assistant.ClearScriptEngine
 export function sleep(duration) { 
   return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
 }
-export async function move(direction) {
+export async function move(direction, { paces } = { paces: 1 } ) {
   try {
-    for (var i = 0; i < 8; i++) 
+    for (var i = 0; i < paces; i++) 
     {
       player.move(direction);
       await sleep(400);
     }
   } catch (e) { }
+}
+
+export function overhead(args, opts = null) {
+  player.overhead(args, opts);
 }
 
 globalThis.sleep2 = sleep;
