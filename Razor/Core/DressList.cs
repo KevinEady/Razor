@@ -1,14 +1,35 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Xml;
 using System.Windows.Forms;
+using Assistant.Scripts;
 using Assistant.UI;
 
 namespace Assistant
 {
     public class DressList
     {
-        private static ArrayList m_List = new ArrayList();
+        private static readonly List<DressList> m_List = new List<DressList>();
         private static ListBox _dressList;
         private static ListBox _dressItems;
 
@@ -23,7 +44,7 @@ namespace Assistant
             _dressList.SafeAction(s => s.Items.Clear());
             _dressItems.SafeAction(s => s.Items.Clear());
 
-            _dressList.SafeAction(s => s.Items.AddRange((object[]) m_List.ToArray(typeof(object))));
+            _dressList.SafeAction(s => s.Items.AddRange(m_List.ToArray()));
         }
 
         public static void ClearAll()
@@ -32,14 +53,14 @@ namespace Assistant
             _dressItems?.SafeAction(s => s.Items.Clear());
 
             while (m_List.Count > 0)
-                Remove((DressList) m_List[0]);
+                Remove(m_List[0]);
         }
 
         public static DressList Find(string name)
         {
             for (int i = 0; i < m_List.Count; i++)
             {
-                DressList list = (DressList) m_List[i];
+                DressList list = m_List[i];
                 if (list.Name == name)
                     return list;
             }
@@ -52,7 +73,7 @@ namespace Assistant
             Item undressBag = World.Player.Backpack;
             for (int i = 0; i < m_List.Count; i++)
             {
-                DressList list = (DressList) m_List[i];
+                DressList list = m_List[i];
                 if (list != null && (list.Items.Contains(item.Serial) || list.Items.Contains(item.ItemID)))
                 {
                     if (list.m_UndressBag.IsValid)
@@ -193,36 +214,27 @@ namespace Assistant
             }
         }
 
-        private ArrayList m_Items;
         private Serial m_UndressBag;
-        private string m_Name;
 
         public DressList(string name)
         {
-            m_Name = name;
-            m_Items = new ArrayList();
+            Name = name;
+            Items = new List<object>();
             m_UndressBag = Serial.Zero;
         }
 
         public DressList(XmlElement xml)
         {
-            m_Name = xml.GetAttribute("name");
+            Name = xml.GetAttribute("name");
         }
 
         public override string ToString()
         {
-            return m_Name;
+            return Name;
         }
 
-        public string Name
-        {
-            get { return m_Name; }
-        }
-
-        public ArrayList Items
-        {
-            get { return m_Items; }
-        }
+        public string Name { get; }
+        public List<object> Items { get; }
 
         public void SetUndressBag(Serial serial)
         {
@@ -238,15 +250,15 @@ namespace Assistant
                 return;
 
             int worn = 0;
-            int total = m_Items.Count;
+            int total = Items.Count;
 
-            for (int i = 0; i < m_Items.Count; i++)
+            for (int i = 0; i < Items.Count; i++)
             {
                 Item item = null;
-                if (m_Items[i] is Serial)
-                    item = World.FindItem((Serial) m_Items[i]);
-                else if (m_Items[i] is ItemID)
-                    item = World.Player.FindItemByID((ItemID) m_Items[i]);
+                if (Items[i] is Serial)
+                    item = World.FindItem((Serial) Items[i]);
+                else if (Items[i] is ItemID)
+                    item = World.Player.FindItemByID((ItemID) Items[i]);
 
                 if (item == null)
                     total--;
@@ -254,7 +266,7 @@ namespace Assistant
                     worn++;
             }
 
-            if (m_Items.Count == 1)
+            if (Items.Count == 1)
             {
                 if (worn != 0)
                     Undress();
@@ -284,7 +296,10 @@ namespace Assistant
             }
 
             if (Macros.MacroManager.AcceptActions)
-                Macros.MacroManager.Action(new Macros.UnDressAction(m_Name));
+                Macros.MacroManager.Action(new Macros.UnDressAction(Name));
+
+            if (ScriptManager.Recording)
+                ScriptManager.AddToScript($"undress '{Name}'");
 
             if (m_UndressBag.IsValid)
             {
@@ -297,13 +312,13 @@ namespace Assistant
                     World.Player.SendMessage(LocString.UndressBagRange);
             }
 
-            for (int i = 0; i < m_Items.Count; i++)
+            for (int i = 0; i < Items.Count; i++)
             {
                 Item item = null;
-                if (m_Items[i] is Serial)
-                    item = World.FindItem((Serial) m_Items[i]);
-                else if (m_Items[i] is ItemID)
-                    item = World.Player.FindItemByID((ItemID) m_Items[i]);
+                if (Items[i] is Serial)
+                    item = World.FindItem((Serial) Items[i]);
+                else if (Items[i] is ItemID)
+                    item = World.Player.FindItemByID((ItemID) Items[i]);
 
                 if (item == null || DragDropManager.CancelDragFor(item.Serial) || item.Container != World.Player)
                 {
@@ -334,7 +349,7 @@ namespace Assistant
                 return;
 
             int skipped = 0, gone = 0, done = 0;
-            ArrayList list = new ArrayList();
+            List<Item> list = new List<Item>();
             bool remConflicts = Config.GetBool("UndressConflicts");
 
             if (World.Player.Backpack == null)
@@ -344,22 +359,24 @@ namespace Assistant
             }
 
             if (Macros.MacroManager.AcceptActions)
-                Macros.MacroManager.Action(new Macros.DressAction(m_Name));
+                Macros.MacroManager.Action(new Macros.DressAction(Name));
 
-            for (int i = 0; i < m_Items.Count; i++)
+            ScriptManager.AddToScript($"dress '{Name}'");
+
+            for (int i = 0; i < Items.Count; i++)
             {
                 Item item = null;
-                if (m_Items[i] is Serial)
+                if (Items[i] is Serial)
                 {
-                    item = World.FindItem((Serial) m_Items[i]);
+                    item = World.FindItem((Serial) Items[i]);
                     if (item == null)
                         gone++;
                     else
                         list.Add(item);
                 }
-                else if (m_Items[i] is ItemID)
+                else if (Items[i] is ItemID)
                 {
-                    ItemID id = (ItemID) m_Items[i];
+                    ItemID id = (ItemID) Items[i];
 
                     // search to make sure they are not already wearing this...
                     item = World.Player.FindItemByID(id);

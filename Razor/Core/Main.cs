@@ -1,14 +1,32 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.Reflection;
 using System.Threading;
-using System.Collections;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Principal;
-using CUO_API;
 
 namespace Assistant
 {
@@ -229,8 +247,14 @@ namespace Assistant
             get { return DateTime.UtcNow.AddHours(Differential); }
         }
 
+        public static CultureInfo Culture;
+
         public static void Load()
         {
+            Culture = new CultureInfo("en-US", false);
+            Culture.NumberFormat.NumberDecimalSeparator = ".";
+            Culture.NumberFormat.NumberGroupSeparator = ",";
+
             /* Load localization files */
             string defLang = Config.GetAppSetting<string>("DefaultLanguage");
             if (defLang == null)

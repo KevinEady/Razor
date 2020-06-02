@@ -1,7 +1,29 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.Collections.Generic;
+using Assistant.Agents;
 using Assistant.Core;
 using Assistant.Macros;
+using Assistant.Scripts;
 
 namespace Assistant
 {
@@ -70,6 +92,11 @@ namespace Assistant
             get { return m_HasTarget; }
         }
 
+        public static TargetInfo LastTargetInfo
+        {
+            get { return m_LastTarget; }
+        }
+
         public static bool FromGrabHotKey
         {
             get { return m_FromGrabHotKey; }
@@ -135,10 +162,14 @@ namespace Assistant
         private static void AttackLastComb()
         {
             if (m_LastCombatant.IsMobile)
+            {
                 Client.Instance.SendToServer(new AttackReq(m_LastCombatant));
+                ShowAttackOverhead(m_LastCombatant);
+            }
+                
         }
 
-        private static void AttackLastTarg()
+        public static void AttackLastTarg()
         {
             TargetInfo targ;
             if (IsSmartTargetingEnabled())
@@ -156,7 +187,23 @@ namespace Assistant
             }
 
             if (targ != null && targ.Serial.IsMobile)
+            {
                 Client.Instance.SendToServer(new AttackReq(targ.Serial));
+                ShowAttackOverhead(targ.Serial);
+            }
+        }
+
+        public static void ShowAttackOverhead(Serial serial)
+        {
+            if (!Config.GetBool("ShowAttackTargetOverhead"))
+                return;
+
+            Mobile m = World.FindMobile(serial);
+            if (m == null)
+                return;
+
+            World.Player.OverheadMessage(FriendsManager.IsFriend(m.Serial) ? 63 : m.GetNotorietyColorInt(),
+                $"Attack: {m.Name}");
         }
 
         private static void OnClearQueue()
@@ -349,7 +396,6 @@ namespace Assistant
 
             if (World.Player != null)
             {
-                m_LTHarmWasSet = false;
                 OneTimeTarget(false, OnSetLastTargetHarmful, OnSLTHarmfulCancel);
                 World.Player.SendMessage(MsgLevel.Force, LocString.NewHarmfulTarget);
             }
@@ -696,6 +742,9 @@ namespace Assistant
             //if ( Macros.MacroManager.AcceptActions )
             //	MacroManager.Action( new LastTargetAction() );
 
+            if (FromGrabHotKey)
+                return;
+
             if (m_HasTarget)
             {
                 if (!DoLastTarget())
@@ -721,6 +770,9 @@ namespace Assistant
 
         public static bool DoLastTarget()
         {
+            if (FromGrabHotKey)
+                return true;
+
             TargetInfo targ;
             if (IsSmartTargetingEnabled())
             {
@@ -840,6 +892,8 @@ namespace Assistant
                 {
                     if (Macros.MacroManager.AcceptActions)
                         MacroManager.Action(new AbsoluteTargetAction(info));
+
+                    ScriptManager.AddToScript($"target {info.Serial}");
 
                     if (m_OnTarget != null)
                         m_OnTarget(info.Type == 1 ? true : false, info.Serial, new Point3D(info.X, info.Y, info.Z),
@@ -1121,6 +1175,9 @@ namespace Assistant
 
         private static void TargetResponse(PacketReader p, PacketHandlerEventArgs args)
         {
+            if (World.Player == null)
+                return;
+
             TargetInfo info = new TargetInfo
             {
                 Type = p.ReadByte(),
@@ -1231,6 +1288,21 @@ namespace Assistant
 
                 if (Macros.MacroManager.AcceptActions)
                     MacroManager.Action(new AbsoluteTargetAction(info));
+
+                ScriptManager.AddToScript(info.Serial == Serial.Zero
+                    ? $"target 0x0 {info.X} {info.Y} {info.Z}"
+                    : $"target {info.Serial}");
+
+
+                if (ScriptManager.Recording)
+                {
+                    if (info.Serial == Serial.Zero)
+                    {
+                    }
+                    else
+                    {
+                    }
+                }
             }
             else
             {
@@ -1238,9 +1310,17 @@ namespace Assistant
                 {
                     KeyData hk = HotKey.Get((int) LocString.TargetSelf);
                     if (hk != null)
+                    {
                         MacroManager.Action(new HotKeyAction(hk));
+
+                        ScriptManager.AddToScript($"hotkey '{hk.DispName}'");
+                    }
                     else
+                    {
                         MacroManager.Action(new AbsoluteTargetAction(info));
+
+                        ScriptManager.AddToScript($"target {info.Serial}");
+                    }
                 }
             }
 
@@ -1291,6 +1371,10 @@ namespace Assistant
                 MacroManager.Action(new WaitForTargetAction()))
             {
                 args.Block = true;
+            }
+            else if (m_QueueTarget == null && ScriptManager.AddToScript("waitfortarget"))
+            {
+                //args.Block = true;
             }
             else if (m_QueueTarget != null && m_QueueTarget())
             {

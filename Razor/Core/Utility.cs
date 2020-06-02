@@ -1,7 +1,27 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.IO;
 using System.Text;
-using System.Collections;
+using System.Globalization;
 
 namespace Assistant
 {
@@ -335,17 +355,36 @@ namespace Assistant
             if (str == null)
                 return def;
 
-            try
-            {
-                if (str.Length > 2 && str.Substring(0, 2).ToLower() == "0x")
-                    return Convert.ToInt32(str.Substring(2), 16);
-                else
-                    return Convert.ToInt32(str);
-            }
-            catch
-            {
+            if (str == null)
                 return def;
+
+            int val;
+            if (str.StartsWith("0x"))
+            {
+                if (int.TryParse(str.Substring(2), NumberStyles.HexNumber, Engine.Culture, out val))
+                    return val;
             }
+            else if (int.TryParse(str, out val))
+                return val;
+
+            return def;
+        }
+
+        public static uint ToUInt32(string str, uint def)
+        {
+            if (str == null)
+                return def;
+
+            uint val;
+            if (str.StartsWith("0x"))
+            {
+                if (uint.TryParse(str.Substring(2), NumberStyles.HexNumber, Engine.Culture, out val))
+                    return val;
+            }
+            else if (uint.TryParse(str, out val))
+                return val;
+
+            return def;
         }
 
         public static double ToDouble(string str, double def)
@@ -353,14 +392,26 @@ namespace Assistant
             if (str == null)
                 return def;
 
-            try
-            {
-                return Convert.ToDouble(str);
-            }
-            catch
-            {
+            if (double.TryParse(str, out double d))
+                return d;
+            return def;
+        }
+
+        public static ushort ToUInt16(string str, ushort def)
+        {
+            if (str == null)
                 return def;
+
+            ushort val;
+            if (str.StartsWith("0x"))
+            {
+                if (ushort.TryParse(str.Substring(2), NumberStyles.HexNumber, Engine.Culture, out val))
+                    return val;
             }
+            else if (ushort.TryParse(str, out val))
+                return val;
+
+            return def;
         }
     }
 }

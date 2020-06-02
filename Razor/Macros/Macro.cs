@@ -1,10 +1,29 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.Collections;
 using System.Windows.Forms;
 using System.Reflection;
 using System.IO;
 using System.Text;
-using Assistant;
 using Assistant.UI;
 
 namespace Assistant.Macros
@@ -573,6 +592,91 @@ namespace Assistant.Macros
 
                         if (ca >= 0 && m_Actions[ca] is ForAction)
                             m_CurrentAction = ca - 1;
+                    }
+                    else if (action is WhileAction && Client.Instance.AllowBit(FeatureBit.LoopingMacros))
+                    {
+                        bool val = ((WhileAction) action).Evaluate();
+
+                        if (!val)
+                        {
+                            // false so skip to the endwhile
+                            int whilecount = 0;
+                            while (m_CurrentAction + 1 < m_Actions.Count)
+                            {
+                                if (m_Actions[m_CurrentAction + 1] is WhileAction)
+                                {
+                                    whilecount++;
+                                }
+                                else if (m_Actions[m_CurrentAction + 1] is EndWhileAction)
+                                {
+                                    if (whilecount <= 0)
+                                    {
+                                        // Skip over the end while
+                                        m_CurrentAction++;
+                                        break;
+                                    }
+
+                                    whilecount--;
+                                }
+
+                                m_CurrentAction++;
+                            }
+                        }
+                    }
+                    else if (action is EndWhileAction && Client.Instance.AllowBit(FeatureBit.LoopingMacros))
+                    {
+                        int ca = m_CurrentAction - 1;
+                        int whilecount = 0;
+
+                        while (ca >= 0)
+                        {
+                            if (m_Actions[ca] is EndWhileAction)
+                            {
+                                whilecount--;
+                            }
+                            else if (m_Actions[ca] is WhileAction)
+                            {
+                                if (whilecount >= 0)
+                                    break;
+                                else
+                                    whilecount++;
+                            }
+
+                            ca--;
+                        }
+
+                        if (ca >= 0 && m_Actions[ca] is WhileAction)
+                            m_CurrentAction = ca - 1;
+                    }
+                    else if (action is DoWhileAction && Client.Instance.AllowBit(FeatureBit.LoopingMacros))
+                    {
+                        bool val = ((DoWhileAction) action).Evaluate();
+
+                        if (val)
+                        {
+                            int ca = m_CurrentAction - 1;
+                            int dowhilecount = 0;
+
+                            while (ca >= 0)
+                            {
+                                if (m_Actions[ca] is DoWhileAction)
+                                {
+                                    dowhilecount--;
+                                }
+                                else if (m_Actions[ca] is StartDoWhileAction)
+                                {
+                                    if (dowhilecount >= 0)
+                                        break;
+                                    else
+                                        dowhilecount++;
+                                }
+
+                                ca--;
+                            }
+
+                            if (ca >= 0 && m_Actions[ca] is StartDoWhileAction)
+                                m_CurrentAction = ca - 1;
+                        }
                     }
 
                     bool isWait = action is MacroWaitAction;

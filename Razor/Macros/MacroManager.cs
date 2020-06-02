@@ -1,9 +1,28 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Windows.Forms;
+using Assistant.Scripts;
 using Assistant.UI;
 
 namespace Assistant.Macros
@@ -105,6 +124,8 @@ namespace Assistant.Macros
 
         public static void PlayAt(Macro m, int at)
         {
+            ScriptManager.StopScript();
+
             if (m_Current != null)
             {
                 if (m_Current.Playing && m_Current.Loop && !m.Loop)
@@ -154,6 +175,8 @@ namespace Assistant.Macros
 
         public static void Play(Macro m)
         {
+            ScriptManager.StopScript();
+
             if (m_Current != null)
             {
                 if (m_Current.Playing && m_Current.Loop && !m.Loop)

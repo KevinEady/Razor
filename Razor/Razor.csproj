@@ -19,7 +19,8 @@
     <StartupObject>Assistant.Engine</StartupObject>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <PublishUrl>E:\Programming\razor-markdwags\Build\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -143,6 +144,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Agents\BuyAgent.cs" />
+    <Compile Include="Agents\IgnoreAgent.cs" />
+    <Compile Include="Agents\OrganizerAgent.cs" />
+    <Compile Include="Agents\RestockAgent.cs" />
+    <Compile Include="Agents\SearchExemptionAgent.cs" />
+    <Compile Include="Agents\SellAgent.cs" />
+    <Compile Include="Agents\UseOnceAgent.cs" />
     <Compile Include="Boat\BoatWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -154,14 +162,16 @@
     <Compile Include="Core\ActionQueue.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Core\Agents.cs">
+    <Compile Include="Agents\Agents.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\BuffsTimer.cs" />
     <Compile Include="Core\BuffsDebuffs.cs" />
     <Compile Include="Core\BodCapture.cs" />
+    <Compile Include="Core\Dress.cs" />
     <Compile Include="Core\EncodedSpeech.cs" />
     <Compile Include="Core\DamageTracker.cs" />
+    <Compile Include="Filters\SoundMusicManager.cs" />
     <Compile Include="Filters\TargetFilterManager.cs" />
     <Compile Include="Core\FriendsManager.cs" />
     <Compile Include="Core\MessageInBottleCapture.cs" />
@@ -237,6 +247,10 @@
     <Compile Include="Core\ItemID.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Agents\ScavengerAgent.cs" />
+    <Compile Include="Scripts\AgentCommands.cs" />
+    <Compile Include="Scripts\Engine\Interpreter.cs" />
+    <Compile Include="Scripts\Engine\Lexer.cs" />
     <Compile Include="Macros\MacroVariables.cs" />
     <Compile Include="Macros\Actions.cs">
       <SubType>Component</SubType>
@@ -253,6 +267,11 @@
     <Compile Include="Core\Map.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Scripts\Aliases.cs" />
+    <Compile Include="Scripts\Commands.cs" />
+    <Compile Include="Scripts\Expressions.cs" />
+    <Compile Include="Scripts\ScriptVariables.cs" />
+    <Compile Include="Scripts\ScriptManager.cs" />
     <Compile Include="Map\MapWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -356,6 +375,12 @@
     <Compile Include="UI\Languages.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\MacroInsertDoWhile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MacroInsertWhile.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="UI\MacroInsertIf.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -379,6 +404,9 @@
     </Compile>
     <Compile Include="UI\Razor.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Razor.Designer.cs">
+      <DependentUpon>Razor.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\SplashScreen.cs">
       <SubType>Form</SubType>
@@ -465,6 +493,12 @@
     <EmbeddedResource Include="UI\InputBox.resx">
       <DependentUpon>InputBox.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\MacroInsertDoWhile.resx">
+      <DependentUpon>MacroInsertDoWhile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\MacroInsertWhile.resx">
+      <DependentUpon>MacroInsertWhile.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\MacroInsertIf.resx">
       <DependentUpon>MacroInsertIf.cs</DependentUpon>
     </EmbeddedResource>
@@ -533,6 +567,12 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Razor.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FastColoredTextBox\FastColoredTextBox.csproj">
+      <Project>{6DD14A85-CCFC-4774-BD26-0F5772512319}</Project>
+      <Name>FastColoredTextBox</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -1,7 +1,27 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
+using Assistant.Agents;
 
 namespace Assistant
 {
@@ -229,10 +249,7 @@ namespace Assistant
             }
         }
 
-        public string DisplayName
-        {
-            get { return Ultima.TileData.ItemTable[m_ItemID.Value].Name; }
-        }
+        public string DisplayName => m_ItemID.Value < Ultima.TileData.ItemTable.Length ? Ultima.TileData.ItemTable[m_ItemID.Value].Name : string.Empty;
 
         public Layer Layer
         {
@@ -269,6 +286,26 @@ namespace Assistant
                 else if (recurse)
                 {
                     item = item.FindItemByID(id, true);
+                    if (item != null)
+                        return item;
+                }
+            }
+
+            return null;
+        }
+
+        public Item FindItemByName(string name, bool recurse)
+        {
+            foreach (var i in m_Items)
+            {
+                Item item = i;
+                if (item.ItemID.ItemData.Name.ToLower().Contains(name.ToLower()))
+                {
+                    return item;
+                }
+                else if (recurse)
+                {
+                    item = item.FindItemByName(name, true);
                     if (item != null)
                         return item;
                 }

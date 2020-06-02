@@ -1,7 +1,25 @@
-﻿using System;
+﻿#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 
 namespace Assistant.Macros
@@ -13,11 +31,75 @@ namespace Assistant.Macros
             public TargetInfo TargetInfo { get; set; }
             public string Name { get; set; }
 
+            public bool TargetWasSet { get; set; }
+
             public MacroVariable(string targetVarName, TargetInfo t)
             {
                 TargetInfo = t;
                 Name = targetVarName;
+                TargetWasSet = true;
             }
+
+            public void TargetSetMacroVariable()
+            {
+                if (World.Player != null)
+                {
+                    TargetWasSet = false;
+
+                    Targeting.OneTimeTarget(OnMacroVariableTarget);
+                    World.Player.SendMessage(MsgLevel.Force, $"Select target for ${Name}");
+
+                    //OneTimeTarget(false, new Targeting.TargetResponseCallback(OnMacroVariableTarget), new Targeting.CancelTargetCallback(OnSLTCancel));
+                }
+            }
+
+            private void OnMacroVariableTarget(bool ground, Serial serial, Point3D pt, ushort gfx)
+            {
+                TargetInfo t = new TargetInfo
+                {
+                    Gfx = gfx,
+                    Serial = serial,
+                    Type = (byte) (ground ? 1 : 0),
+                    X = pt.X,
+                    Y = pt.Y,
+                    Z = pt.Z
+                };
+
+                bool foundVar = false;
+
+                foreach (MacroVariables.MacroVariable mV in MacroVariables.MacroVariableList
+                )
+                {
+                    if (mV.Name.ToLower().Equals(Name.ToLower()))
+                    {
+                        foundVar = true;
+                        // macro exists, update
+                        mV.TargetInfo = t;
+
+                        World.Player.SendMessage(MsgLevel.Force, $"'{mV.Name}' macro variable updated to '{t.Serial}'");
+
+                        break;
+                    }
+                }
+
+                if (!foundVar)
+                {
+                    //MacroVariables.MacroVariableList.Add(new MacroVariables.MacroVariable(_lastMacroVariable, t));
+                    //World.Player.SendMessage(MsgLevel.Force, $"'{_lastMacroVariable}' not found, created variable and set to '{t.Serial}'");
+                }
+
+                // Save and reload the macros and vars
+                Engine.MainWindow.SaveMacroVariables();
+
+                TargetWasSet = true;
+            }
+
+            /*
+            private void OnSLTCancel()
+            {
+                if (m_LastTarget != null)
+                    m_LTWasSet = true;
+            }*/
         }
 
         public static List<MacroVariable> MacroVariableList = new List<MacroVariable>();
@@ -62,8 +144,9 @@ namespace Assistant.Macros
                     MacroVariableList.Add(macroVariable);
                 }
             }
-            catch (Exception ex)
+            catch
             {
+                // ignored
             }
         }
 
@@ -90,8 +173,9 @@ namespace Assistant.Macros
                     MacroVariableList.Add(macroVariable);
                 }
             }
-            catch (Exception ex)
+            catch
             {
+                // ignored
             }
 
             try
@@ -113,8 +197,9 @@ namespace Assistant.Macros
                     MacroVariableList.Add(macroVariable);
                 }
             }
-            catch (Exception ex)
+            catch
             {
+                // ignored
             }
         }
 

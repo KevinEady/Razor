@@ -1,6 +1,24 @@
-using System;
-using Assistant;
-using Assistant.Macros;
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
+using Assistant.Core;
 
 namespace Assistant.HotKeys
 {
@@ -8,8 +26,8 @@ namespace Assistant.HotKeys
     {
         public static void Initialize()
         {
-            HotKey.Add(HKCategory.Dress, LocString.ArmDisarmRight, new HotKeyCallback(ToggleRight));
-            HotKey.Add(HKCategory.Dress, LocString.ArmDisarmLeft, new HotKeyCallback(ToggleLeft));
+            HotKey.Add(HKCategory.Dress, LocString.ArmDisarmRight, new HotKeyCallback(Dress.ToggleRight));
+            HotKey.Add(HKCategory.Dress, LocString.ArmDisarmLeft, new HotKeyCallback(Dress.ToggleLeft));
 
             HotKey.Add(HKCategory.Dress, LocString.UndressAll, new HotKeyCallback(OnUndressAll));
             HotKey.Add(HKCategory.Dress, LocString.UndressHands, new HotKeyCallback(OnUnequipBothHands));
@@ -17,105 +35,6 @@ namespace Assistant.HotKeys
             HotKey.Add(HKCategory.Dress, LocString.UndressRight, new HotKeyCallback(OnUnequipRight));
             HotKey.Add(HKCategory.Dress, LocString.UndressHat, new HotKeyCallback(OnUnequipHat));
             HotKey.Add(HKCategory.Dress, LocString.UndressJewels, new HotKeyCallback(OnUnequipJewelry));
-        }
-
-        private static Item m_Right, m_Left;
-
-        public static void ToggleRight()
-        {
-            if (World.Player == null)
-                return;
-
-            Item item = World.Player.GetItemOnLayer(Layer.RightHand);
-            if (item == null)
-            {
-                if (m_Right != null)
-                    m_Right = World.FindItem(m_Right.Serial);
-
-                if (m_Right != null && m_Right.IsChildOf(World.Player.Backpack))
-                {
-                    // try to also undress conflicting hand(s)
-                    Item conflict = World.Player.GetItemOnLayer(Layer.LeftHand);
-                    if (conflict != null && (conflict.IsTwoHanded || m_Right.IsTwoHanded))
-                    {
-                        Item ub = DressList.FindUndressBag(conflict);
-                        if (ub != null)
-                            DragDropManager.DragDrop(conflict, ub);
-                    }
-
-                    DragDropManager.DragDrop(m_Right, World.Player, DressList.GetLayerFor(m_Right));
-                }
-                else
-                {
-                    World.Player.SendMessage(MsgLevel.Force, LocString.MustDisarm);
-                }
-            }
-            else
-            {
-                Item ub = DressList.FindUndressBag(item);
-                if (ub != null)
-                    DragDropManager.DragDrop(item, ub);
-                m_Right = item;
-            }
-        }
-
-        public static void ToggleLeft()
-        {
-            if (World.Player == null || World.Player.Backpack == null)
-                return;
-
-            Item item = World.Player.GetItemOnLayer(Layer.LeftHand);
-            if (item == null)
-            {
-                if (m_Left != null)
-                    m_Left = World.FindItem(m_Left.Serial);
-
-                if (m_Left != null && m_Left.IsChildOf(World.Player.Backpack))
-                {
-                    Item conflict = World.Player.GetItemOnLayer(Layer.RightHand);
-                    if (conflict != null && (conflict.IsTwoHanded || m_Left.IsTwoHanded))
-                    {
-                        Item ub = DressList.FindUndressBag(conflict);
-                        if (ub != null)
-                            DragDropManager.DragDrop(conflict, ub);
-                    }
-
-                    DragDropManager.DragDrop(m_Left, World.Player, DressList.GetLayerFor(m_Left));
-                }
-                else
-                {
-                    World.Player.SendMessage(MsgLevel.Force, LocString.MustDisarm);
-                }
-            }
-            else
-            {
-                Item ub = DressList.FindUndressBag(item);
-                if (ub != null)
-                    DragDropManager.DragDrop(item, ub);
-                m_Left = item;
-            }
-        }
-
-        public static bool Unequip(Layer layer)
-        {
-            if (layer == Layer.Invalid || layer > Layer.LastUserValid)
-                return false;
-
-            //if ( Macros.MacroManager.AcceptActions )
-            //	MacroManager.Action( new Macros.UnDressAction( (byte)Layer ) );
-
-            Item item = World.Player.GetItemOnLayer(layer);
-            if (item != null)
-            {
-                Item pack = DressList.FindUndressBag(item);
-                if (pack != null)
-                {
-                    DragDropManager.DragDrop(item, pack);
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         public static void OnUndressAll()
@@ -138,30 +57,30 @@ namespace Assistant.HotKeys
 
         public static void OnUnequipJewelry()
         {
-            Unequip(Layer.Ring); // ring
-            Unequip(Layer.Bracelet); // bracelet
-            Unequip(Layer.Earrings); // earrings
+            Dress.Unequip(Layer.Ring); // ring
+            Dress.Unequip(Layer.Bracelet); // bracelet
+            Dress.Unequip(Layer.Earrings); // earrings
         }
 
         public static void OnUnequipHat()
         {
-            Unequip(Layer.Head);
+            Dress.Unequip(Layer.Head);
         }
 
         public static void OnUnequipBothHands()
         {
-            Unequip(Layer.RightHand);
-            Unequip(Layer.LeftHand);
+            Dress.Unequip(Layer.RightHand);
+            Dress.Unequip(Layer.LeftHand);
         }
 
         public static void OnUnequipRight()
         {
-            Unequip(Layer.RightHand);
+            Dress.Unequip(Layer.RightHand);
         }
 
         public static void OnUnequipLeft()
         {
-            Unequip(Layer.LeftHand);
+            Dress.Unequip(Layer.LeftHand);
         }
     }
 }

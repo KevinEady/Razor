@@ -1,10 +1,31 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
+using Assistant.Agents;
 using Assistant.Core;
 using Assistant.Macros;
+using Assistant.Scripts;
 
 namespace Assistant
 {
@@ -19,8 +40,9 @@ namespace Assistant
             Command.Register("Help", Command.ListCommands);
             Command.Register("Echo", Echo);
             Command.Register("Macro", MacroCmd);
+            Command.Register("Script", ScriptCmd);
             Command.Register("Hue", GetItemHue);
-            Command.Register("Item", GetItemHue);            
+            Command.Register("Item", GetItemHue);
             Command.Register("Resync", Resync);
             Command.Register("Mobile", GetMobile);
             Command.Register("Weather", SetWeather);
@@ -74,14 +96,14 @@ namespace Assistant
             {
                 Gfx = gfx,
                 Serial = serial,
-                Type = (byte)(ground ? 1 : 0),
+                Type = (byte) (ground ? 1 : 0),
                 X = pt.X,
                 Y = pt.Y,
                 Z = pt.Z
             };
 
             bool foundVar = false;
-            
+
             foreach (MacroVariables.MacroVariable mV in MacroVariables.MacroVariableList
             )
             {
@@ -100,7 +122,8 @@ namespace Assistant
             if (!foundVar)
             {
                 MacroVariables.MacroVariableList.Add(new MacroVariables.MacroVariable(_lastMacroVariable, t));
-                World.Player.SendMessage(MsgLevel.Force, $"'{_lastMacroVariable}' not found, created variable and set to '{t.Serial}'");
+                World.Player.SendMessage(MsgLevel.Force,
+                    $"'{_lastMacroVariable}' not found, created variable and set to '{t.Serial}'");
             }
 
             // Save and reload the macros and vars
@@ -136,10 +159,8 @@ namespace Assistant
             if (item != null)
             {
                 Client.Instance.SendToClient(new UnicodeMessage(0xFFFFFFFF, -1, MessageType.Regular, 0x3B2, 3,
-                    Language.CliLocName, "System", $"Item: '{item.Name}' '{item.ItemID.Value}'"));
-
-                Client.Instance.SendToClient(new UnicodeMessage(0xFFFFFFFF, -1, MessageType.Regular, 0x3B2, 3,
-                    Language.CliLocName, "System", $"Hue: '{item.Hue}'"));
+                    Language.CliLocName, "System",
+                    $"Item Name: '{item.ItemID.ItemData.Name}' Serial: '{item.Serial}' Id: '{item.ItemID.Value}' Hue: '{item.Hue}'"));
             }
         }
 
@@ -180,7 +201,7 @@ namespace Assistant
             string use = Language.GetString(LocString.UseOnce);
             for (int i = 0; i < Agent.List.Count; i++)
             {
-                Agent a = (Agent) Agent.List[i];
+                Agent a = Agent.List[i];
                 if (a.Name == use)
                 {
                     a.OnButtonPress(1);
@@ -256,6 +277,19 @@ namespace Assistant
                     break;
                 }
             }
+        }
+
+        private static void ScriptCmd(string[] param)
+        {
+            if (param.Length <= 0)
+            {
+                World.Player.SendMessage("You must enter a script name.");
+                return;
+            }
+
+            string name = string.Join(" ", param);
+
+            ScriptManager.PlayScript(name);
         }
     }
 
@@ -355,6 +389,7 @@ namespace Assistant
                 if (text[0] != commandToggle)
                 {
                     Macros.MacroManager.Action(new Macros.SpeechAction(type, hue, font, lang, keys, text));
+                    ScriptManager.AddToScript($"say \'{text}\'");
                 }
                 else
                 {

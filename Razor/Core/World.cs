@@ -1,5 +1,23 @@
-using System;
-using System.Collections;
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System.Collections.Generic;
 
 namespace Assistant
@@ -37,16 +55,50 @@ namespace Assistant
 
         internal static Item FindItem(Serial serial)
         {
-            Item it;
-            m_Items.TryGetValue(serial, out it);
+            m_Items.TryGetValue(serial, out Item it);
             return it;
+        }
+
+        internal static Item FindItemByType(int itemId)
+        {
+            foreach (KeyValuePair<Serial, Item> item in m_Items)
+            {
+                if (item.Value.ItemID.Value == itemId)
+                    return item.Value;
+            }
+
+            return null;
+        }
+
+        internal static List<Item> FindItemsByName(string name)
+        {
+            List<Item> items = new List<Item>();
+
+            foreach (KeyValuePair<Serial, Item> item in m_Items)
+            {
+                if (item.Value.ItemID.ItemData.Name.ToLower().StartsWith(name.ToLower()))
+                    items.Add(item.Value);
+            }
+
+            return items;
         }
 
         internal static Mobile FindMobile(Serial serial)
         {
-            Mobile m;
-            m_Mobiles.TryGetValue(serial, out m);
+            m_Mobiles.TryGetValue(serial, out Mobile m);
             return m;
+        }
+
+        internal static List<Mobile> FindMobilesByName(string name)
+        {
+            List<Mobile> mobiles = new List<Mobile>();
+            foreach (KeyValuePair<Serial, Mobile> item in m_Mobiles)
+            {
+                if (item.Value.Name.ToLower().Equals(name.ToLower()))
+                    mobiles.Add(item.Value);
+            }
+
+            return mobiles;
         }
 
         internal static List<Mobile> MobilesInRange(int range)

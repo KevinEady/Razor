@@ -1,3 +1,23 @@
+#region license
+
+// Razor: An Ultima Online Assistant
+// Copyright (C) 2020 Razor Development Community on GitHub <https://github.com/markdwags/Razor>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#endregion
+
 using System;
 using System.Xml;
 using System.IO;
@@ -7,9 +27,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Windows.Forms;
+using Assistant.Agents;
 using Assistant.Core;
 using Assistant.Filters;
 using Assistant.Macros;
+using Assistant.Scripts;
 using Assistant.UI;
 using ContainerLabels = Assistant.Core.ContainerLabels;
 using OverheadMessages = Assistant.Core.OverheadMessages;
@@ -274,6 +296,22 @@ namespace Assistant
             AddProperty("FilterDaemonGraphics", false);
             AddProperty("DaemonGraphic", 0);
 
+            AddProperty("SoundFilterEnabled", false);
+            AddProperty("ShowFilteredSound", false);
+            AddProperty("ShowPlayingSoundInfo", false);
+            AddProperty("ShowMusicInfo", false);
+
+            AddProperty("AutoSaveScript", false);
+            AddProperty("AutoSaveScriptPlay", false);
+
+            AddProperty("HighlightFriend", false);
+
+            AddProperty("ScriptTargetTypeRange", false);
+            AddProperty("ScriptDClickTypeRange", false);
+            AddProperty("ScriptFindTypeRange", false);
+
+            AddProperty("ScriptDisablePlayFinish", false);
+
             Counter.Default();
             Filter.DisableAll();
             DressList.ClearAll();
@@ -285,6 +323,7 @@ namespace Assistant
             OverheadMessages.ClearAll();
             ContainerLabels.ClearAll();
             MacroVariables.ClearAll();
+            ScriptVariables.ClearAll();
             FriendsManager.ClearAll();
         }
 
@@ -387,6 +426,7 @@ namespace Assistant
             Agent.LoadProfile(root["agents"]);
             DressList.Load(root["dresslists"]);
             TargetFilterManager.Load(root["targetfilters"]);
+            SoundMusicManager.Load(root["soundfilters"]);
             FriendsManager.Load(root["friends"]);
             HotKey.Load(root["hotkeys"]);
             PasswordMemory.Load(root["passwords"]);
@@ -399,6 +439,8 @@ namespace Assistant
             {
                 MacroVariables.Import(root);
             }
+
+            ScriptVariables.Load(root["scriptvariables"]);
 
             GoldPerHourTimer.Stop();
             DamageTracker.Stop();
@@ -577,12 +619,20 @@ namespace Assistant
             MacroVariables.Save(xml);
             xml.WriteEndElement();
 
+            xml.WriteStartElement("scriptvariables");
+            ScriptVariables.Save(xml);
+            xml.WriteEndElement();
+
             xml.WriteStartElement("friends");
             FriendsManager.Save(xml);
             xml.WriteEndElement();
 
             xml.WriteStartElement("targetfilters");
             TargetFilterManager.Save(xml);
+            xml.WriteEndElement();
+
+            xml.WriteStartElement("soundfilters");
+            SoundMusicManager.Save(xml);
             xml.WriteEndElement();
 
             xml.WriteEndElement(); // end profile section
@@ -957,6 +1007,11 @@ namespace Assistant
             if (!Directory.Exists(Path.Combine(appDir, "Profiles")))
             {
                 Directory.CreateDirectory(Path.Combine(appDir, "Profiles"));
+            }
+
+            if (!Directory.Exists(Path.Combine(appDir, "Scripts")))
+            {
+                Directory.CreateDirectory(Path.Combine(appDir, "Scripts"));
             }
 
             name = name.Length > 0 ? Path.Combine(appDir, name) : appDir;
