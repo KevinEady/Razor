@@ -52,10 +52,9 @@ namespace Assistant.ClearScriptEngine
 
   public class PluginManager
   {
-    V8ScriptEngine m_Engine;
+    //V8ScriptEngine m_Engine;
     ObjectListView m_OLV;
     object m_InternalUtils;
-    JSUtils m_jsutils;
     static PluginManager inst;
 
     struct OLVColumns
@@ -66,36 +65,6 @@ namespace Assistant.ClearScriptEngine
     OLVColumns m_Cols;
 
     List<Plugin> m_Plugins;
-
-    public class JSUtils
-    {
-
-      dynamic m_InternalUtils;
-      public JSUtils(V8ScriptEngine engine)
-      {
-        string js = @"import * as myExports from 'util-internal'; myExports;";
-        m_InternalUtils = engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
-      }
-
-      public object makePromise(object what)
-      {
-        return m_InternalUtils.makePromise(what);
-      }
-
-      public object isPluginRunning(dynamic pluginInst)
-      {
-        try
-        {
-          Plugin p = inst.m_Plugins.Find((Plugin other) =>
-          {
-            return other.Instance.name.Equals(pluginInst.name);
-          });
-
-          return p.Running;
-        }
-        catch { return null; }
-      }
-    }
 
 
     public static PluginManager instance(ObjectListView olv = null)
@@ -108,71 +77,11 @@ namespace Assistant.ClearScriptEngine
     {
       m_OLV = olv;
       m_Plugins = new List<Plugin>();
-      m_Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports | V8ScriptEngineFlags.EnableDebugging, 9422);
       m_Cols = new OLVColumns();
       m_Cols.enabled = olv.GetColumn(0);
       m_Cols.name = olv.GetColumn(1);
       m_Cols.run = olv.GetColumn(2);
 
-      m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
-      m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"
-export class Plugin {
-  constructor() {
-
-    Object.defineProperty(this, 'running', {
-        get() {
-            return PluginManagerUtils.isPluginRunning(this)
-        }
-    })
-
-Object.defineProperty(this, 'name', {
-        get() {
-            return 'hello-world';
-        },
-        set() {}
-    })
-  }
-  install() {}
-  uninstall() {}
-}
-");
-      m_Engine.DocumentSettings.AddSystemDocument("util", ModuleCategory.Standard, @"
-export function sleep(duration) { 
-  return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
-}
-export async function move(direction, { paces } = { paces: 1 } ) {
-  try {
-    for (var i = 0; i < paces; i++) 
-    {
-      player.move(direction);
-      await sleep(400);
-    }
-  } catch (e) { }
-}
-
-export function overhead(args, opts = null) {
-  player.overhead(args, opts);
-}
-
-globalThis.sleep2 = sleep;
-");
-      m_Engine.DocumentSettings.AddSystemDocument("util-internal", ModuleCategory.Standard, @"
-export function makePromise(x) { 
-  return Promise.resolve(x);
-}
-");
-
-      m_jsutils = new JSUtils(m_Engine);
-
-      m_Engine.AddHostObject("PluginManagerUtils", m_jsutils);
-      m_Engine.AddHostType("TimerCallback", typeof(TimerCallback));
-      m_Engine.AddHostType("Timer", typeof(Timer));
-      m_Engine.AddHostType("TimeSpan", typeof(TimeSpan));
-
-      // m_Engine.AddHostObject("host", new ExtendedHostFunctions());
-
-
-      m_Engine.AddHostObject("player", new ClearScriptBinding.Player(m_Engine));
 
       Recurse(Config.GetUserDirectory("Plugins"));
 
@@ -182,10 +91,6 @@ export function makePromise(x) {
 
     public static bool Debug = true;
 
-    public JSUtils utils
-    {
-      get { return m_jsutils; }
-    }
     internal static void Log(string str, params object[] args)
     {
       if (Debug)
@@ -241,7 +146,7 @@ export function makePromise(x) {
       }
 
       Plugin p = (Plugin)e.Model;
-      p.Execute(m_Engine);
+      p.Execute();
     }
 
     private void objectListView1_ItemChecked(object sender, ItemCheckedEventArgs e)
@@ -250,7 +155,7 @@ export function makePromise(x) {
       Plugin p = m_Plugins[e.Item.Index];
       if (selected)
       {
-        p.Install(m_Engine);
+        p.Install();
       }
       else
       {
@@ -384,6 +289,108 @@ export function makePromise(x) {
     {
       m_ManifestPath = manifestPath;
     }
+
+    V8ScriptEngine m_Engine;
+    JSUtils m_Utils;
+
+    public class JSUtils
+    {
+      dynamic m_InternalUtils;
+      Plugin m_Plugin;
+      public JSUtils(Plugin plugin)
+      {
+        this.m_Plugin = plugin;
+        string js = @"import * as myExports from 'util-internal'; myExports;";
+        m_InternalUtils = plugin.Evaluate(js);
+      }
+
+      public object makePromise(object what)
+      {
+        return m_InternalUtils.makePromise(what);
+      }
+
+      public bool isPluginRunning(dynamic pluginInst)
+      {
+        return m_Plugin.Running;
+      }
+    }
+
+    private dynamic Evaluate(string js)
+    {
+      if (m_Engine == null)
+      {
+        throw new Exception("Plugin is not initialized");
+      }
+      return m_Engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
+    }
+
+    private void SetupEngine()
+    {
+
+      if (m_Engine == null)
+      {
+        m_Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports | V8ScriptEngineFlags.EnableDebugging, 9422);
+        m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
+        m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"
+export class Plugin {
+  constructor() {
+
+    Object.defineProperty(this, 'running', {
+        get() {
+            return PluginManagerUtils.isPluginRunning(this)
+        }
+    })
+
+Object.defineProperty(this, 'name', {
+        get() {
+            return 'hello-world';
+        },
+        set() {}
+    })
+  }
+  install() {}
+  uninstall() {}
+}
+");
+        m_Engine.DocumentSettings.AddSystemDocument("util", ModuleCategory.Standard, @"
+export function sleep(duration) { 
+  return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
+}
+export async function move(direction, { paces } = { paces: 1 } ) {
+  try {
+    for (var i = 0; i < paces; i++) 
+    {
+      player.move(direction);
+      await sleep(400);
+    }
+  } catch (e) { }
+}
+
+export function overhead(args, opts = null) {
+  player.overhead(args, opts);
+}
+
+globalThis.sleep2 = sleep;
+");
+        m_Engine.DocumentSettings.AddSystemDocument("util-internal", ModuleCategory.Standard, @"
+export function makePromise(x) { 
+  return Promise.resolve(x);
+}
+");
+
+        m_Utils = new JSUtils(this);
+
+        m_Engine.AddHostObject("PluginManagerUtils", m_Utils);
+        m_Engine.AddHostType("TimerCallback", typeof(TimerCallback));
+        m_Engine.AddHostType("Timer", typeof(Timer));
+        m_Engine.AddHostType("TimeSpan", typeof(TimeSpan));
+
+        // m_Engine.AddHostObject("host", new ExtendedHostFunctions());
+
+
+        m_Engine.AddHostObject("player", new ClearScriptBinding.Player(m_Engine));
+      }
+    }
     public void Load()
     {
       using (StreamReader r = new StreamReader(m_ManifestPath))
@@ -402,8 +409,12 @@ export function makePromise(x) {
 
       }
     }
-    public bool Install(V8ScriptEngine engine)
+
+    public bool Installed { get { return m_PluginInst != null;  } }
+    public bool Install()
     {
+      SetupEngine();
+
       if (m_PluginInst == null)
       {
         string mainJs = Path.Combine(Path.GetDirectoryName(m_ManifestPath), m_Manifest.main);
@@ -412,7 +423,7 @@ export function makePromise(x) {
         // m_Module = engine.Compile(new DocumentInfo { Category = ModuleCategory.Standard }, js);
         try
         {
-          m_PluginInst = engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
+          m_PluginInst = m_Engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
           m_PluginInst.install();
           m_Enabled = true;
         }
@@ -444,7 +455,7 @@ export function makePromise(x) {
       }
     }
 
-    internal void Execute(V8ScriptEngine engine)
+    internal void Execute()
     {
       try
       {
@@ -452,13 +463,14 @@ export function makePromise(x) {
         {
           Stop();
         }
-        else if (m_PluginInst != null || Install(engine))
+        else if (m_PluginInst != null || Install())
         {
           m_Running = true;
           var result = m_PluginInst.exec();
           var pm = PluginManager.instance();
-          var promised = pm.utils.makePromise(result);
-          Action<object> onComplete = value => { 
+          var promised = m_Utils.makePromise(result);
+          Action<object> onComplete = value =>
+          {
             Stop();
             pm.RefreshObject(this);
           };
