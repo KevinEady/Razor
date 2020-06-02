@@ -759,9 +759,6 @@ namespace Assistant
       this.olvEnabled = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
       this.olvPluginName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
       this.olvRun = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-      this.execScriptResult = new System.Windows.Forms.Label();
-      this.execScriptv2 = new System.Windows.Forms.Button();
-      this.scriptv2Editor = new System.Windows.Forms.TextBox();
       this.screenshotTab = new System.Windows.Forms.TabPage();
       this.captureOwnDeathDelay = new System.Windows.Forms.TextBox();
       this.lblOwnDeathMs = new System.Windows.Forms.Label();
@@ -4436,9 +4433,6 @@ namespace Assistant
       // 
       this.subScriptsv2.BackColor = System.Drawing.SystemColors.Control;
       this.subScriptsv2.Controls.Add(this.olvPlugins);
-      this.subScriptsv2.Controls.Add(this.execScriptResult);
-      this.subScriptsv2.Controls.Add(this.execScriptv2);
-      this.subScriptsv2.Controls.Add(this.scriptv2Editor);
       this.subScriptsv2.Location = new System.Drawing.Point(4, 24);
       this.subScriptsv2.Name = "subScriptsv2";
       this.subScriptsv2.Padding = new System.Windows.Forms.Padding(3);
@@ -4459,11 +4453,11 @@ namespace Assistant
             this.olvRun});
       this.olvPlugins.Cursor = System.Windows.Forms.Cursors.Default;
       this.olvPlugins.HideSelection = false;
-      this.olvPlugins.Location = new System.Drawing.Point(6, 108);
+      this.olvPlugins.Location = new System.Drawing.Point(6, 6);
       this.olvPlugins.Name = "olvPlugins";
       this.olvPlugins.RowHeight = 40;
       this.olvPlugins.ShowGroups = false;
-      this.olvPlugins.Size = new System.Drawing.Size(486, 171);
+      this.olvPlugins.Size = new System.Drawing.Size(486, 273);
       this.olvPlugins.TabIndex = 4;
       this.olvPlugins.UseCellFormatEvents = true;
       this.olvPlugins.UseCompatibleStateImageBehavior = false;
@@ -4475,59 +4469,22 @@ namespace Assistant
       this.olvEnabled.AspectName = "Enabled";
       this.olvEnabled.Text = "Enabled";
       this.olvEnabled.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-      this.olvEnabled.Width = 73;
+      this.olvEnabled.Width = 55;
       // 
       // olvPluginName
       // 
       this.olvPluginName.AspectName = "Plugin";
-      this.olvPluginName.FillsFreeSpace = true;
       this.olvPluginName.Text = "Plugin";
-      this.olvPluginName.Width = 362;
+      this.olvPluginName.Width = 275;
       // 
       // olvRun
       // 
       this.olvRun.AspectName = "Run";
-      this.olvRun.ButtonSize = new System.Drawing.Size(10, 10);
+      this.olvRun.ButtonMaxWidth = 50;
       this.olvRun.IsButton = true;
       this.olvRun.Sortable = false;
       this.olvRun.Text = "Run";
-      this.olvRun.Width = 88;
-      // 
-      // execScriptResult
-      // 
-      this.execScriptResult.AutoSize = true;
-      this.execScriptResult.Location = new System.Drawing.Point(22, 90);
-      this.execScriptResult.Name = "execScriptResult";
-      this.execScriptResult.Size = new System.Drawing.Size(39, 15);
-      this.execScriptResult.TabIndex = 2;
-      this.execScriptResult.Text = "Result";
-      this.execScriptResult.Visible = false;
-      this.execScriptResult.Click += new System.EventHandler(this.label5_Click);
-      // 
-      // execScriptv2
-      // 
-      this.execScriptv2.Location = new System.Drawing.Point(377, 20);
-      this.execScriptv2.Name = "execScriptv2";
-      this.execScriptv2.Size = new System.Drawing.Size(98, 23);
-      this.execScriptv2.TabIndex = 1;
-      this.execScriptv2.Text = "Execute Script";
-      this.execScriptv2.UseVisualStyleBackColor = true;
-      this.execScriptv2.Click += new System.EventHandler(this.execScriptv2_Click);
-      // 
-      // scriptv2Editor
-      // 
-      this.scriptv2Editor.AcceptsReturn = true;
-      this.scriptv2Editor.AcceptsTab = true;
-      this.scriptv2Editor.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.scriptv2Editor.Location = new System.Drawing.Point(25, 20);
-      this.scriptv2Editor.Multiline = true;
-      this.scriptv2Editor.Name = "scriptv2Editor";
-      this.scriptv2Editor.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.scriptv2Editor.Size = new System.Drawing.Size(346, 56);
-      this.scriptv2Editor.TabIndex = 0;
-      this.scriptv2Editor.Text = "import * from \'abc\';";
-      this.scriptv2Editor.WordWrap = false;
-      this.scriptv2Editor.TextChanged += new System.EventHandler(this.scriptv2Editor_TextChanged);
+      this.olvRun.Width = 150;
       // 
       // screenshotTab
       // 
@@ -5091,7 +5048,6 @@ namespace Assistant
       this.tabPage3.PerformLayout();
       this.scriptVariablesBox.ResumeLayout(false);
       this.subScriptsv2.ResumeLayout(false);
-      this.subScriptsv2.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.olvPlugins)).EndInit();
       this.screenshotTab.ResumeLayout(false);
       this.screenshotTab.PerformLayout();
@@ -5134,9 +5090,6 @@ namespace Assistant
         private CheckBox scriptFindTypeRange;
         private CheckBox scriptDisablePlayFinish;
         private TabPage subScriptsv2;
-        private Button execScriptv2;
-        private TextBox scriptv2Editor;
-        private Label execScriptResult;
         private BrightIdeasSoftware.ObjectListView olvPlugins;
         private BrightIdeasSoftware.OLVColumn olvEnabled;
         private BrightIdeasSoftware.OLVColumn olvPluginName;

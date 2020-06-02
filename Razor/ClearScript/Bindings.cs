@@ -222,6 +222,11 @@ export function makePromise(x) {
 
       m_OLV.FormatCell += new System.EventHandler<BrightIdeasSoftware.FormatCellEventArgs>(this.olv_FormatCell);
       m_Cols.run.Renderer = new MyButtonRenderer();
+      //m_Cols.run.ButtonSizing = OLVColumn.ButtonSizingMode.FixedBounds;
+      // m_Cols.run.WordWrap = false;
+
+      //m_Cols.run.ButtonPadding = new Size(150, 5);
+
       m_OLV.SetObjects(m_Plugins);
 
       //m_Cols.run.IsButton = true;
@@ -281,10 +286,11 @@ export function makePromise(x) {
         decoration.Description = plugin.Description;
         e.SubItem.Decoration = decoration;
       }
-      //else if (e.ColumnIndex == 2)
-      //{
-      //  e.SubItem.Text = plugin.Enabled ? "Run" : "Enable && Run";
-      //}
+      else if (e.ColumnIndex == 2)
+      {
+        //e.SubItem.CellPadding = new Rectangle(-10, -10, -10, -10);
+        //e.SubItem.
+      }
     }
 
     private void Add(Plugin p)
