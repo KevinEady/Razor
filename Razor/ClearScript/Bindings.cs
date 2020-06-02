@@ -124,7 +124,7 @@ namespace Assistant.ClearScriptEngine
 
 
       m_OLV.ButtonClick += objectListView1_ButtonClick;
-      m_OLV.ItemChecked += objectListView1_ItemChecked;
+      m_OLV.ItemCheck += objectListView1_ItemCheck;
 
       m_OLV.FormatCell += new System.EventHandler<BrightIdeasSoftware.FormatCellEventArgs>(this.olv_FormatCell);
       m_Cols.run.Renderer = new MyButtonRenderer();
@@ -150,13 +150,17 @@ namespace Assistant.ClearScriptEngine
       p.Execute();
     }
 
-    private void objectListView1_ItemChecked(object sender, ItemCheckedEventArgs e)
+    private void objectListView1_ItemCheck(object sender, ItemCheckEventArgs e)
     {
-      bool selected = e.Item.Checked;
-      Plugin p = m_Plugins[e.Item.Index];
+      bool selected = e.NewValue == CheckState.Checked;
+
+      Plugin p = m_Plugins[e.Index];
       if (selected)
       {
-        p.Install();
+        if (!p.Install())
+        {
+          e.NewValue = CheckState.Unchecked;
+        }
       }
       else
       {
@@ -253,7 +257,6 @@ namespace Assistant.ClearScriptEngine
     ExecState m_ExecState;
     V8ScriptEngine m_Engine;
     Thread m_ExecThread;
-    JSUtils m_Utils;
 
     public Plugin(string manifestPath)
     {
@@ -333,6 +336,11 @@ namespace Assistant.ClearScriptEngine
       return m_Engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
     }
 
+    private class HostFunctions
+    {
+      public static void sleep(int duration) { try { Thread.Sleep(duration); } catch { /* ignore */ } }
+
+    }
     private void SetupEngine()
     {
 
@@ -340,11 +348,6 @@ namespace Assistant.ClearScriptEngine
       {
         m_Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports | V8ScriptEngineFlags.EnableDebugging, 9422);
         m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
-        m_Engine.ContinuationCallback = () =>
-        {
-
-          return m_ExecState == ExecState.RUNNING;
-        };
 
         m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"
 export class Plugin {
@@ -360,16 +363,16 @@ export function sleepAsync(duration) {
   return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
 }
 
-//export function sleep(duration) { 
-//  const start = Date.now(); while (Date.now() - start < duration) { };
-//}
+export function sleepSync(duration) { 
+  const start = Date.now(); while (Date.now() - start < duration) { };
+}
 
-export async function move(direction, { paces } = { paces: 1 } ) {
+export function move(direction, { paces } = { paces: 1 } ) {
   try {
     for (var i = 0; i < paces; i++) 
     {
       player.move(direction);
-      await sleep(400);
+      sleep(400);
     }
   } catch (e) { }
 }
@@ -380,29 +383,19 @@ export function overhead(args, opts = null) {
 
 globalThis.sleep2 = sleep;
 ");
-        m_Engine.DocumentSettings.AddSystemDocument("util-internal", ModuleCategory.Standard, @"
-export function makePromise(x) { 
-  return Promise.resolve(x);
-}
-");
 
-        m_Utils = new JSUtils(this);
-
-        m_Engine.AddHostObject("PluginManagerUtils", m_Utils);
-        m_Engine.AddHostObject("sleep", (VoidFunction)delegate (int duration) { try { Thread.Sleep(duration); } catch { /* ignore */ } });
+        m_Engine.AddHostObject("sleep", (SleepFunction)delegate (int duration) { try { Thread.Sleep(duration); } catch { /* ignore */ } });
 
         m_Engine.AddHostType("TimerCallback", typeof(TimerCallback));
         m_Engine.AddHostType("Timer", typeof(Timer));
         m_Engine.AddHostType("TimeSpan", typeof(TimeSpan));
 
         // m_Engine.AddHostObject("host", new ExtendedHostFunctions());
-
-
         m_Engine.AddHostObject("player", new ClearScriptBinding.Player(m_Engine));
       }
     }
 
-    public delegate void VoidFunction(int duration);
+    private delegate void SleepFunction(int duration);
 
     public void Load()
     {
@@ -423,7 +416,6 @@ export function makePromise(x) {
       }
     }
 
-    public bool Installed { get { return m_PluginInst != null; } }
     public bool Install()
     {
       SetupEngine();
@@ -442,7 +434,10 @@ export function makePromise(x) {
         }
         catch (Exception ex)
         {
-          PluginManager.Log("Error installing plugin: {0}", ex.ToString());
+          MessageBox.Show(String.Format("Error installing plugin: {0}", ex.ToString()), "Cannot install plugin", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          DocumentLoader.Default.DiscardCachedDocuments();
+          m_Enabled = false;
+          m_PluginInst = null;
         }
       }
 
@@ -454,8 +449,9 @@ export function makePromise(x) {
       m_ExecState = ExecState.STOPPING;
       m_Engine.Interrupt();
       if (m_ExecThread != null)
-      {
-        m_ExecThread.Interrupt();
+      {        
+          m_ExecThread.Interrupt();
+        
         // m_ExecThread.Join();
         // m_ExecThread = null;
       }
@@ -494,7 +490,9 @@ export function makePromise(x) {
             try
             {
               var result = m_PluginInst.start();
-              var promised = m_Utils.makePromise(result);
+              var promiseResolve = (ScriptObject)ScriptEngine.Current.Script.Promise.resolve;
+              var promised = promiseResolve.Invoke(false, result);
+
               Action<object> onComplete = value =>
               {
                 m_ExecState = ExecState.STOPPED;
@@ -505,7 +503,6 @@ export function makePromise(x) {
             }
             catch (Exception ex)
             {
-
               try
               {
                 var result = m_PluginInst.stop();
@@ -683,7 +680,7 @@ namespace Assistant.ClearScriptBinding
       {
         //Debugger.Break();
         //return 3;
-        dynamic arrayFrom = m_engine.Evaluate("Array.from");
+        dynamic arrayFrom = m_engine.Script.Array.from;
         return arrayFrom(m_Item.Contains.Select(x => new Item(m_engine, x)));
       }
       set { }
