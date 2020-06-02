@@ -118,10 +118,6 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="cuoapi, Version=1.3.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\cuoapi.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -540,9 +536,6 @@
     <Content Include="Boat\Images\southeast.png" />
     <Content Include="Boat\Images\southwest.png" />
     <Content Include="Boat\Images\west.png" />
-    <Content Include="cuoapi.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="UI\Lock.ico" />
     <Content Include="UI\UOPS.ico" />
   </ItemGroup>
@@ -569,6 +562,10 @@
     <None Include="Razor.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ClassicUO\cuoapi\CUO_API\CUO_API.csproj">
+      <Project>{4A3C19BD-F557-4C69-B29A-E60DBE61DBFF}</Project>
+      <Name>CUO_API</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FastColoredTextBox\FastColoredTextBox.csproj">
       <Project>{6DD14A85-CCFC-4774-BD26-0F5772512319}</Project>
       <Name>FastColoredTextBox</Name>
