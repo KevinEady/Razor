@@ -11,6 +11,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ultima;
@@ -245,6 +246,19 @@ namespace Assistant.ClearScriptEngine
 
   public class Plugin
   {
+    string m_ManifestPath;
+    Manifest m_Manifest;
+    dynamic m_PluginInst;
+    bool m_Enabled;
+    ExecState m_ExecState;
+    V8ScriptEngine m_Engine;
+    Thread m_ExecThread;
+    JSUtils m_Utils;
+
+    public Plugin(string manifestPath)
+    {
+      m_ManifestPath = manifestPath;
+    }
 
     private class Manifest
     {
@@ -254,11 +268,12 @@ namespace Assistant.ClearScriptEngine
       public string main { get; set; }
     }
 
-    string m_ManifestPath;
-    Manifest m_Manifest;
-    dynamic m_PluginInst;
-    bool m_Enabled;
-    bool m_Running;
+    enum ExecState
+    {
+      STOPPED,
+      RUNNING,
+      STOPPING
+    };
 
     public string Name
     {
@@ -278,20 +293,19 @@ namespace Assistant.ClearScriptEngine
 
     public string Run
     {
-      get { return m_Running ? "Stop" : m_Enabled ? "Run" : "Install && Run"; }
+      get
+      {
+        if (m_ExecState == ExecState.RUNNING)
+          return "Stop";
+        else if (m_ExecState == ExecState.STOPPING)
+          return "Stopping...";
+        else
+          return m_Enabled ? "Run" : "Install && Run";
+      }
     }
 
     internal dynamic Instance { get { return m_PluginInst; } }
 
-    public bool Running { get { return m_Running; } }
-
-    public Plugin(string manifestPath)
-    {
-      m_ManifestPath = manifestPath;
-    }
-
-    V8ScriptEngine m_Engine;
-    JSUtils m_Utils;
 
     public class JSUtils
     {
@@ -307,11 +321,6 @@ namespace Assistant.ClearScriptEngine
       public object makePromise(object what)
       {
         return m_InternalUtils.makePromise(what);
-      }
-
-      public bool isPluginRunning(dynamic pluginInst)
-      {
-        return m_Plugin.Running;
       }
     }
 
@@ -331,31 +340,30 @@ namespace Assistant.ClearScriptEngine
       {
         m_Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports | V8ScriptEngineFlags.EnableDebugging, 9422);
         m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
+        m_Engine.ContinuationCallback = () =>
+        {
+
+          return m_ExecState == ExecState.RUNNING;
+        };
+
         m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"
 export class Plugin {
-  constructor() {
-
-    Object.defineProperty(this, 'running', {
-        get() {
-            return PluginManagerUtils.isPluginRunning(this)
-        }
-    })
-
-Object.defineProperty(this, 'name', {
-        get() {
-            return 'hello-world';
-        },
-        set() {}
-    })
-  }
+  constructor() {}
   install() {}
+  stop() {}
+  start() {}
   uninstall() {}
 }
 ");
         m_Engine.DocumentSettings.AddSystemDocument("util", ModuleCategory.Standard, @"
-export function sleep(duration) { 
+export function sleepAsync(duration) { 
   return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
 }
+
+//export function sleep(duration) { 
+//  const start = Date.now(); while (Date.now() - start < duration) { };
+//}
+
 export async function move(direction, { paces } = { paces: 1 } ) {
   try {
     for (var i = 0; i < paces; i++) 
@@ -381,6 +389,8 @@ export function makePromise(x) {
         m_Utils = new JSUtils(this);
 
         m_Engine.AddHostObject("PluginManagerUtils", m_Utils);
+        m_Engine.AddHostObject("sleep", (VoidFunction)delegate (int duration) { try { Thread.Sleep(duration); } catch { /* ignore */ } });
+
         m_Engine.AddHostType("TimerCallback", typeof(TimerCallback));
         m_Engine.AddHostType("Timer", typeof(Timer));
         m_Engine.AddHostType("TimeSpan", typeof(TimeSpan));
@@ -391,6 +401,9 @@ export function makePromise(x) {
         m_Engine.AddHostObject("player", new ClearScriptBinding.Player(m_Engine));
       }
     }
+
+    public delegate void VoidFunction(int duration);
+
     public void Load()
     {
       using (StreamReader r = new StreamReader(m_ManifestPath))
@@ -410,7 +423,7 @@ export function makePromise(x) {
       }
     }
 
-    public bool Installed { get { return m_PluginInst != null;  } }
+    public bool Installed { get { return m_PluginInst != null; } }
     public bool Install()
     {
       SetupEngine();
@@ -438,50 +451,103 @@ export function makePromise(x) {
 
     public void Stop()
     {
-      m_Running = false;
-      PluginManager.instance().RefreshObject(this);
+      m_ExecState = ExecState.STOPPING;
+      m_Engine.Interrupt();
+      if (m_ExecThread != null)
+      {
+        m_ExecThread.Interrupt();
+        // m_ExecThread.Join();
+        // m_ExecThread = null;
+      }
+      Refresh();
     }
     public void Uninstall()
     {
-      if (m_PluginInst != null)
+      if (m_ExecState == ExecState.RUNNING)
+      {
+        Stop();
+      }
+      else if (m_PluginInst != null)
       {
         m_PluginInst.uninstall();
         m_PluginInst = null;
-        m_Enabled = false;
-        PluginManager.instance().RefreshObject(this);
-        DocumentLoader.Default.DiscardCachedDocuments();
-
-
       }
+      m_Enabled = false;
+      Refresh();
+      DocumentLoader.Default.DiscardCachedDocuments();
+
     }
 
     internal void Execute()
     {
       try
       {
-        if (m_Running)
+        if (m_ExecState == ExecState.RUNNING)
         {
           Stop();
         }
-        else if (m_PluginInst != null || Install())
+        else if (m_ExecState == ExecState.STOPPED && (m_PluginInst != null || Install()))
         {
-          m_Running = true;
-          var result = m_PluginInst.exec();
-          var pm = PluginManager.instance();
-          var promised = m_Utils.makePromise(result);
-          Action<object> onComplete = value =>
+          m_ExecState = ExecState.RUNNING;
+          m_ExecThread = new Thread(() =>
           {
-            Stop();
-            pm.RefreshObject(this);
-          };
-          promised.then(onComplete, onComplete); // writes "Resolved: 123"
-          pm.RefreshObject(this);
+            try
+            {
+              var result = m_PluginInst.start();
+              var promised = m_Utils.makePromise(result);
+              Action<object> onComplete = value =>
+              {
+                m_ExecState = ExecState.STOPPED;
+                m_ExecThread = null;
+                Refresh();
+              };
+              promised.then(onComplete, onComplete);
+            }
+            catch (Exception ex)
+            {
+
+              try
+              {
+                var result = m_PluginInst.stop();
+                m_ExecState = ExecState.STOPPED;
+                m_ExecThread = null;
+                if (!m_Enabled)
+                {
+                  m_PluginInst.uninstall();
+                  m_PluginInst = null;
+                }
+                Refresh();
+              }
+              catch (Exception ex2)
+              {
+                m_ExecState = ExecState.STOPPED;
+                m_ExecThread = null;
+                Refresh();
+              }
+
+
+
+            }
+
+          });
+          m_ExecThread.Start();
+          Refresh();
+
+        }
+        else if (m_ExecState == ExecState.STOPPING)
+        {
+          Stop();
         }
       }
       catch (Exception ex)
       {
         PluginManager.Log("Error executing plugin: {0}", ex.ToString());
       }
+    }
+
+    private void Refresh()
+    {
+      PluginManager.instance().RefreshObject(this);
     }
   }
 
