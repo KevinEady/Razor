@@ -80,7 +80,7 @@ namespace Assistant
       new StatsTimer(this).Start();
       Language.LoadControlNames(this);
 
-      new ClearScriptEngine.PluginManager(olvPlugins);
+      ClearScriptEngine.PluginManager.instance(olvPlugins);
 
       FriendsManager.SetControls(friendsGroup, friendsList);
       DressList.SetControls(dressList, dressItems);

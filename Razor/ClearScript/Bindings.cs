@@ -54,6 +54,10 @@ namespace Assistant.ClearScriptEngine
   {
     V8ScriptEngine m_Engine;
     ObjectListView m_OLV;
+    object m_InternalUtils;
+    JSUtils m_jsutils;
+    static PluginManager inst;
+
     struct OLVColumns
     {
       public OLVColumn enabled, name, run;
@@ -63,8 +67,44 @@ namespace Assistant.ClearScriptEngine
 
     List<Plugin> m_Plugins;
 
+    public class JSUtils
+    {
 
-    public PluginManager(ObjectListView olv)
+      dynamic m_InternalUtils;
+      public JSUtils(V8ScriptEngine engine)
+      {
+        string js = @"import * as myExports from 'util-internal'; myExports;";
+        m_InternalUtils = engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
+      }
+
+      public object makePromise(object what)
+      {
+        return m_InternalUtils.makePromise(what);
+      }
+
+      public object isPluginRunning(dynamic pluginInst)
+      {
+        try
+        {
+          Plugin p = inst.m_Plugins.Find((Plugin other) =>
+          {
+            return other.Instance.name.Equals(pluginInst.name);
+          });
+
+          return p.Running;
+        }
+        catch { return null; }
+      }
+    }
+
+
+    public static PluginManager instance(ObjectListView olv = null)
+    {
+
+      return PluginManager.inst ?? (PluginManager.inst =
+        new ClearScriptEngine.PluginManager(olv));
+    }
+    private PluginManager(ObjectListView olv)
     {
       m_OLV = olv;
       m_Plugins = new List<Plugin>();
@@ -75,7 +115,27 @@ namespace Assistant.ClearScriptEngine
       m_Cols.run = olv.GetColumn(2);
 
       m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
-      m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"export class Plugin { install() {} uninstall() {} }");
+      m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"
+export class Plugin {
+  constructor() {
+
+    Object.defineProperty(this, 'running', {
+        get() {
+            return PluginManagerUtils.isPluginRunning(this)
+        }
+    })
+
+Object.defineProperty(this, 'name', {
+        get() {
+            return 'hello-world';
+        },
+        set() {}
+    })
+  }
+  install() {}
+  uninstall() {}
+}
+");
       m_Engine.DocumentSettings.AddSystemDocument("util", ModuleCategory.Standard, @"
 export function sleep(duration) { 
   return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
@@ -96,12 +156,20 @@ export function overhead(args, opts = null) {
 
 globalThis.sleep2 = sleep;
 ");
+      m_Engine.DocumentSettings.AddSystemDocument("util-internal", ModuleCategory.Standard, @"
+export function makePromise(x) { 
+  return Promise.resolve(x);
+}
+");
 
+      m_jsutils = new JSUtils(m_Engine);
+
+      m_Engine.AddHostObject("PluginManagerUtils", m_jsutils);
       m_Engine.AddHostType("TimerCallback", typeof(TimerCallback));
       m_Engine.AddHostType("Timer", typeof(Timer));
       m_Engine.AddHostType("TimeSpan", typeof(TimeSpan));
 
-     // m_Engine.AddHostObject("host", new ExtendedHostFunctions());
+      // m_Engine.AddHostObject("host", new ExtendedHostFunctions());
 
 
       m_Engine.AddHostObject("player", new ClearScriptBinding.Player(m_Engine));
@@ -110,9 +178,14 @@ globalThis.sleep2 = sleep;
 
       InitializeObjectListView();
     }
-
+    private delegate int OnCastSpell(string what);
 
     public static bool Debug = true;
+
+    public JSUtils utils
+    {
+      get { return m_jsutils; }
+    }
     internal static void Log(string str, params object[] args)
     {
       if (Debug)
@@ -145,6 +218,8 @@ globalThis.sleep2 = sleep;
 
 
       m_OLV.ButtonClick += objectListView1_ButtonClick;
+      m_OLV.ItemChecked += objectListView1_ItemChecked;
+
       m_OLV.FormatCell += new System.EventHandler<BrightIdeasSoftware.FormatCellEventArgs>(this.olv_FormatCell);
       m_Cols.run.Renderer = new MyButtonRenderer();
       m_OLV.SetObjects(m_Plugins);
@@ -155,8 +230,28 @@ globalThis.sleep2 = sleep;
     }
     private void objectListView1_ButtonClick(object sender, BrightIdeasSoftware.CellClickEventArgs e)
     {
+      if (!e.Item.Checked)
+      {
+        e.Item.Checked = true;
+      }
+
       Plugin p = (Plugin)e.Model;
       p.Execute(m_Engine);
+    }
+
+    private void objectListView1_ItemChecked(object sender, ItemCheckedEventArgs e)
+    {
+      bool selected = e.Item.Checked;
+      Plugin p = m_Plugins[e.Item.Index];
+      if (selected)
+      {
+        p.Install(m_Engine);
+      }
+      else
+      {
+        p.Uninstall();
+      }
+      m_OLV.RefreshObject(p);
     }
 
     public class MyButtonRenderer : BrightIdeasSoftware.ColumnButtonRenderer
@@ -178,18 +273,18 @@ globalThis.sleep2 = sleep;
 
     public void olv_FormatCell(object sender, BrightIdeasSoftware.FormatCellEventArgs e)
     {
+      Plugin plugin = (Plugin)e.Model;
       if (e.ColumnIndex == 1)
       {
-        Plugin plugin = (Plugin)e.Model;
         NamedDescriptionDecoration decoration = new NamedDescriptionDecoration();
         decoration.Title = plugin.Name;
         decoration.Description = plugin.Description;
         e.SubItem.Decoration = decoration;
       }
-      else if (e.ColumnIndex == 2)
-      {
-        e.SubItem.Text = "Run";
-      }
+      //else if (e.ColumnIndex == 2)
+      //{
+      //  e.SubItem.Text = plugin.Enabled ? "Run" : "Enable && Run";
+      //}
     }
 
     private void Add(Plugin p)
@@ -230,6 +325,11 @@ globalThis.sleep2 = sleep;
       {
       }
     }
+
+    internal void RefreshObject(Plugin plugin)
+    {
+      m_OLV.RefreshObject(plugin);
+    }
   }
 
   public class Plugin
@@ -243,16 +343,21 @@ globalThis.sleep2 = sleep;
       public string main { get; set; }
     }
 
-    object m_Settings;
     string m_ManifestPath;
     Manifest m_Manifest;
-    V8Script m_Module;
     dynamic m_PluginInst;
     bool m_Enabled;
+    bool m_Running;
 
     public string Name
     {
       get { return m_Manifest.name; }
+    }
+
+    public bool Enabled
+    {
+      get { return m_Enabled; }
+      set { m_Enabled = Enabled; }
     }
 
     public string Description
@@ -262,13 +367,16 @@ globalThis.sleep2 = sleep;
 
     public string Run
     {
-      get { return "Run"; }
+      get { return m_Running ? "Stop" : m_Enabled ? "Run" : "Install && Run"; }
     }
+
+    internal dynamic Instance { get { return m_PluginInst; } }
+
+    public bool Running { get { return m_Running; } }
 
     public Plugin(string manifestPath)
     {
       m_ManifestPath = manifestPath;
-
     }
     public void Load()
     {
@@ -288,7 +396,7 @@ globalThis.sleep2 = sleep;
 
       }
     }
-    public void Install(V8ScriptEngine engine)
+    public bool Install(V8ScriptEngine engine)
     {
       if (m_PluginInst == null)
       {
@@ -296,17 +404,37 @@ globalThis.sleep2 = sleep;
         string js = @"import plugin from '" + new Uri(mainJs).AbsoluteUri + "'; new plugin;";
 
         // m_Module = engine.Compile(new DocumentInfo { Category = ModuleCategory.Standard }, js);
-        m_PluginInst = engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
-        m_PluginInst.install();
+        try
+        {
+          m_PluginInst = engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, js);
+          m_PluginInst.install();
+          m_Enabled = true;
+        }
+        catch (Exception ex)
+        {
+          PluginManager.Log("Error installing plugin: {0}", ex.ToString());
+        }
       }
 
+      return m_PluginInst != null;
     }
 
+    public void Stop()
+    {
+      m_Running = false;
+      PluginManager.instance().RefreshObject(this);
+    }
     public void Uninstall()
     {
       if (m_PluginInst != null)
       {
         m_PluginInst.uninstall();
+        m_PluginInst = null;
+        m_Enabled = false;
+        PluginManager.instance().RefreshObject(this);
+        DocumentLoader.Default.DiscardCachedDocuments();
+
+
       }
     }
 
@@ -314,11 +442,23 @@ globalThis.sleep2 = sleep;
     {
       try
       {
-        if (m_PluginInst == null)
+        if (m_Running)
         {
-          Install(engine);
+          Stop();
         }
-        m_PluginInst.exec();
+        else if (m_PluginInst != null || Install(engine))
+        {
+          m_Running = true;
+          var result = m_PluginInst.exec();
+          var pm = PluginManager.instance();
+          var promised = pm.utils.makePromise(result);
+          Action<object> onComplete = value => { 
+            Stop();
+            pm.RefreshObject(this);
+          };
+          promised.then(onComplete, onComplete); // writes "Resolved: 123"
+          pm.RefreshObject(this);
+        }
       }
       catch (Exception ex)
       {
@@ -429,7 +569,8 @@ namespace Assistant.ClearScriptBinding
           Client.Instance.RequestMove(dir);
 
         }
-      } catch { /* ignore */ }
+      }
+      catch { /* ignore */ }
     }
 
     public Item backpack
