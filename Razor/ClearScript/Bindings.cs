@@ -686,6 +686,11 @@ namespace Assistant.ClearScriptBinding
       set { }
     }
 
+    public bool use()
+    {
+      return PlayerData.DoubleClick(m_Item.Serial);
+    }
+
     public string name
     {
       get { return m_Item.DisplayName; }
