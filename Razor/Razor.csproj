@@ -554,6 +554,9 @@
     <Content Include="Boat\Images\southeast.png" />
     <Content Include="Boat\Images\southwest.png" />
     <Content Include="Boat\Images\west.png" />
+    <Content Include="cuoapi.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\Lock.ico" />
     <Content Include="UI\UOPS.ico" />
   </ItemGroup>
@@ -580,10 +583,6 @@
     <None Include="Razor.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ClassicUO\cuoapi\CUO_API\CUO_API.csproj">
-      <Project>{4A3C19BD-F557-4C69-B29A-E60DBE61DBFF}</Project>
-      <Name>CUO_API</Name>
-    </ProjectReference>
     <ProjectReference Include="..\FastColoredTextBox\FastColoredTextBox.csproj">
       <Project>{6DD14A85-CCFC-4774-BD26-0F5772512319}</Project>
       <Name>FastColoredTextBox</Name>

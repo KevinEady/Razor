@@ -1,6 +1,3 @@
 [submodule "ScriptEngine/Steam"]
 	path = ScriptEngine/Steam
 	url = https://github.com/jaedan/steam-engine
-[submodule "ClassicUO"]
-	path = ClassicUO
-	url = https://github.com/KevinEady/ClassicUO.git
