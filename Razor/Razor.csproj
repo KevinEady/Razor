@@ -170,6 +170,7 @@
       <DependentUpon>BoatWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="ClearScript\Bindings.cs" />
+    <EmbeddedResource Include="ClearScript\Bindings.js" />
     <Compile Include="Client\ClassicUO.cs" />
     <Compile Include="Client\OSI.cs" />
     <Compile Include="Core\ActionQueue.cs">

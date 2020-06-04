@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -253,6 +254,7 @@ namespace Assistant.ClearScriptEngine
     string m_ManifestPath;
     Manifest m_Manifest;
     dynamic m_PluginInst;
+    dynamic m_Bindings;
     bool m_Enabled;
     ExecState m_ExecState;
     V8ScriptEngine m_Engine;
@@ -348,16 +350,18 @@ namespace Assistant.ClearScriptEngine
       {
         m_Engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports | V8ScriptEngineFlags.EnableDebugging, 9422);
         m_Engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
+        m_Engine.AccessContext = typeof(Plugin);
 
-        m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, @"
-export class Plugin {
-  constructor() {}
-  install() {}
-  stop() {}
-  start() {}
-  uninstall() {}
-}
-");
+        var assembly = Assembly.GetExecutingAssembly();
+
+        using (Stream stream = assembly.GetManifestResourceStream("Assistant.ClearScript.Bindings.js"))
+        using (StreamReader reader = new StreamReader(stream))
+        {
+          string result = reader.ReadToEnd();
+          m_Engine.DocumentSettings.AddSystemDocument("cuo", ModuleCategory.Standard, result);
+
+        }
+
         m_Engine.DocumentSettings.AddSystemDocument("util", ModuleCategory.Standard, @"
 export function sleepAsync(duration) { 
   return new Promise(resolve => Timer.DelayedCallback(TimeSpan.FromMilliseconds(duration), new TimerCallback(resolve)).Start());
@@ -384,6 +388,11 @@ export function overhead(args, opts = null) {
 globalThis.sleep2 = sleep;
 ");
 
+        // m_Engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, @"import * as cuo from 'cuo'; cuo;");
+        m_Bindings = m_Engine.Evaluate(new DocumentInfo { Category = ModuleCategory.Standard }, @"import * as cuo from 'file://h:/vs_workspace/Razor/Razor/ClearScript/Bindings.js'; cuo;");
+        var player = ((ScriptObject)m_Bindings.Player).Invoke(true, World.Player);
+        m_Engine.Script.player = player;
+
         m_Engine.AddHostObject("sleep", (SleepFunction)delegate (int duration) { try { Thread.Sleep(duration); } catch { /* ignore */ } });
 
         m_Engine.AddHostType("TimerCallback", typeof(TimerCallback));
@@ -391,7 +400,8 @@ globalThis.sleep2 = sleep;
         m_Engine.AddHostType("TimeSpan", typeof(TimeSpan));
 
         // m_Engine.AddHostObject("host", new ExtendedHostFunctions());
-        m_Engine.AddHostObject("player", new ClearScriptBinding.Player(m_Engine));
+
+        //m_Engine.AddHostObject("player", player);
       }
     }
 
